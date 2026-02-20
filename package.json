@@ -1,0 +1,27 @@
+{
+  "name": "history-list",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./dist/history-list.cjs",
+  "module": "./dist/history-list.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/history-list.js",
+      "require": "./dist/history-list.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && tsc",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vite": "^8.0.0-beta.15"
+  }
+}
