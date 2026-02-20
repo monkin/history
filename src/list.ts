@@ -17,7 +17,9 @@ export class List<Id extends string | number, T extends Item<Id>> {
     ) {}
 
     get maxId(): Id | undefined {
-        return this.items[0]?.id ?? this.previous?.maxId;
+        const { items, previous } = this;
+        if (items.length) return items[0].id;
+        return previous?.maxId;
     }
 
     isEmpty(): boolean {
