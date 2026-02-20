@@ -1,3 +1,4 @@
-export class HistoryList<T> {
+export class History<T> {
+  items: T[] = [];
   constructor() {}
 }
