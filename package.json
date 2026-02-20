@@ -1,27 +1,30 @@
 {
-  "name": "@monkin/history",
-  "version": "0.0.0",
-  "type": "module",
-  "main": "./dist/history.cjs",
-  "module": "./dist/history.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
-  "exports": {
-    ".": {
-      "import": "./dist/history.js",
-      "require": "./dist/history.cjs",
-      "types": "./dist/index.d.ts"
-    }
-  },
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build && tsc",
-    "preview": "vite preview"
-  },
-  "devDependencies": {
-    "typescript": "^5.9.3",
-    "vite": "^8.0.0-beta.15"
-  }
+	"name": "@monkin/history",
+	"version": "0.0.0",
+	"type": "module",
+	"main": "./dist/history.cjs",
+	"module": "./dist/history.js",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"exports": {
+		".": {
+			"import": "./dist/history.js",
+			"require": "./dist/history.cjs",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build && tsc",
+		"preview": "vite preview",
+		"lint": "biome check .",
+		"format": "biome format . --write"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.4.3",
+		"typescript": "^5.9.3",
+		"vite": "^8.0.0-beta.15"
+	}
 }
