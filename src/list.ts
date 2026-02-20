@@ -48,7 +48,8 @@ export class List<Id extends string | number, T extends Item<Id>> {
     }
 
     /**
-     * Set or replace item by id.
+     * Set or replace item by id, and return a new list.
+     * If there is exactly the same item (===), the method returns `this`.
      */
     insert(_value: T): List<Id, T> {
         throw new Error("Not implemented");
