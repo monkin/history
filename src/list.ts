@@ -1,6 +1,7 @@
 import type { Item } from "./item.ts";
 
-const CHUNK_SIZE = 32;
+/** @internal */
+export const CHUNK_SIZE = 32;
 
 /**
  * Immutable list of items ordered by id.
@@ -8,14 +9,16 @@ const CHUNK_SIZE = 32;
  * It's implemented as a deque (a single linked list of chunks).
  */
 export class List<Id extends string | number, T extends Item<Id>> {
-    private readonly items: T[];
-    private readonly previous: List<Id, T> | undefined;
     constructor(
         /**
          * Items sorted by id. Items should not contain more than CHUNK_SIZE elements.
+         * @internal
          */
-        items: T[],
-        previous: List<Id, T> | undefined,
+        readonly items: T[],
+        /**
+         * @internal
+         */
+        readonly previous: List<Id, T> | undefined,
     ) {
         this.items = items;
         this.previous = previous;
@@ -60,65 +63,43 @@ export class List<Id extends string | number, T extends Item<Id>> {
 
     insert(value: T): List<Id, T> {
         const { items, previous } = this;
-        const id = value.id;
+        const { id } = value;
         const l = items.length;
 
         if (l === 0) {
             return previous?.insert(value) ?? new List([value], undefined);
         }
 
-        const latestId = items[0].id;
-        const earliestId = items[l - 1].id;
-
-        if (id > latestId) {
-            if (l === CHUNK_SIZE) {
-                return new List([value], this);
-            } else {
-                return new List([value, ...items], previous);
-            }
+        if (id > items[0].id) {
+            return l === CHUNK_SIZE
+                ? new List([value], this)
+                : new List([value, ...items], previous);
         }
 
-        if (id < earliestId) {
+        if (id < items[l - 1].id) {
             if (previous) {
-                const updatedPrevious = previous.insert(value);
-                if (updatedPrevious === previous) return this;
-                return new List(items, updatedPrevious);
+                const updated = previous.insert(value);
+                return updated === previous ? this : new List(items, updated);
             }
-
-            if (l === CHUNK_SIZE) {
-                return new List(items, new List([value], undefined));
-            } else {
-                return new List([...items, value], undefined);
-            }
+            return l === CHUNK_SIZE
+                ? new List(items, new List([value], undefined))
+                : new List([...items, value], undefined);
         }
 
-        let low = 0;
-        let high = l - 1;
-        while (low <= high) {
-            const mid = (low + high) >>> 1;
-            const midId = items[mid].id;
-            if (midId === id) {
-                if (items[mid] === value) return this;
-                const newItems = [...items];
-                newItems[mid] = value;
-                return new List(newItems, previous);
-            }
-            if (midId < id) {
-                high = mid - 1;
-            } else {
-                low = mid + 1;
-            }
+        const index = items.findIndex((i) => i.id <= id);
+        if (items[index].id === id) {
+            if (items[index] === value) return this;
+            const newItems = [...items];
+            newItems[index] = value;
+            return new List(newItems, previous);
         }
 
-        const newItems = [...items];
-        newItems.splice(low, 0, value);
+        const newItems = [...items].splice(index, 0, value);
         if (newItems.length > CHUNK_SIZE) {
-            const last = newItems.pop()!;
-            const newPrevious = (
-                previous ?? new List<Id, T>([], undefined)
-            ).insert(last);
-            return new List(newItems, newPrevious);
+            const last = newItems.shift() as T;
+            return new List([last], new List(newItems, previous));
         }
+
         return new List(newItems, previous);
     }
 

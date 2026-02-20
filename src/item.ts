@@ -1,4 +1,4 @@
 export interface Item<Id extends string | number> {
-    id: Id;
-    previous: Id | undefined;
+    readonly id: Id;
+    readonly previous: Id | undefined;
 }

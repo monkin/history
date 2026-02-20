@@ -1,12 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { List } from "./list.ts";
+import { CHUNK_SIZE, List } from "./list.ts";
 
 interface MyItem {
     id: number;
     previous: number | undefined;
 }
-
-const CHUNK_SIZE = 32;
 
 function createItem(id: number, previous?: number): MyItem {
     return { id, previous };
@@ -108,8 +106,9 @@ describe("List", () => {
         expect((list as any).items.length).toBe(CHUNK_SIZE);
 
         list = list.insert(createItem(CHUNK_SIZE)); // Insert id CHUNK_SIZE at start
-        expect((list as any).items.length).toBe(CHUNK_SIZE);
+        expect((list as any).items.length).toBe(1);
         expect((list as any).previous).toBeDefined();
+        expect((list as any).previous.items.length).toBe(CHUNK_SIZE);
         expect(list.isValid()).toBe(true);
         expect(list.get(0)?.id).toBe(0);
         expect(list.get(CHUNK_SIZE)?.id).toBe(CHUNK_SIZE);
