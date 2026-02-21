@@ -11,9 +11,9 @@ interface MyEntry extends Entry<number, string> {
 function createItem(
     id: number,
     previous?: number,
-    data: string = "test",
+    value: string = "test",
 ): MyEntry {
-    return { id, previous, value: data };
+    return { id, previous, value };
 }
 
 describe("List", () => {
