@@ -134,6 +134,15 @@ export class List<Id extends string | number, T extends Item<Id>> {
         if (this.previous) yield* this.previous;
     }
 
+    /**
+     * Check if the list is valid. It will return false if the list is not completely loaded.
+     *
+     * A list is valid if:
+     * - ids are sorted in descending order
+     * - no references to the future (previous id is less than current id)
+     * - all ids are present in the list
+     * - all chunks are not too big (max size is CHUNK_SIZE items)
+     */
     isValid(): boolean {
         let previous: T | undefined;
         const ids = new Set<Id>();
