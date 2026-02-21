@@ -67,7 +67,7 @@ describe("List", () => {
 
         // Check that we have multiple chunks
         let chunks = 0;
-        let curr: any = list;
+        let curr: List<number, MyItem> | undefined = list;
         while (curr) {
             chunks++;
             expect(curr.items.length).toBeLessThanOrEqual(CHUNK_SIZE);
@@ -103,12 +103,12 @@ describe("List", () => {
         for (let i = 0; i < CHUNK_SIZE; i++) {
             list = list.insert(createItem(i));
         }
-        expect((list as any).items.length).toBe(CHUNK_SIZE);
+        expect(list.items.length).toBe(CHUNK_SIZE);
 
         list = list.insert(createItem(CHUNK_SIZE)); // Insert id CHUNK_SIZE at start
-        expect((list as any).items.length).toBe(1);
-        expect((list as any).previous).toBeDefined();
-        expect((list as any).previous.items.length).toBe(CHUNK_SIZE);
+        expect(list.items.length).toBe(1);
+        expect(list.previous).toBeDefined();
+        expect(list.previous?.items.length).toBe(CHUNK_SIZE);
         expect(list.isValid()).toBe(true);
         expect(list.get(0)?.id).toBe(0);
         expect(list.get(CHUNK_SIZE)?.id).toBe(CHUNK_SIZE);
