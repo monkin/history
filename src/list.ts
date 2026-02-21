@@ -5,7 +5,7 @@ export const CHUNK_SIZE = 32;
 
 /**
  * Immutable list of items ordered by id.
- * Elements with higher id are placed first.
+ * Elements with higher id (latest operations) are placed first.
  * It's implemented as a deque (a single linked list of chunks).
  */
 export class List<T extends Item<string | number>> {
