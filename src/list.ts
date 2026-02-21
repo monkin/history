@@ -24,10 +24,22 @@ export class List<Id extends string | number, T extends Item<Id>> {
         this.previous = previous;
     }
 
+    /**
+     * The latest id in the list.
+     */
     get maxId(): Id | undefined {
         const { items, previous } = this;
         if (items.length) return items[0].id;
         return previous?.maxId;
+    }
+
+    /**
+     * The earliest id in the list.
+     */
+    get minId(): Id | undefined {
+        const { items, previous } = this;
+        if (items.length) return items[items.length - 1].id;
+        return previous?.minId;
     }
 
     isEmpty(): boolean {
@@ -106,6 +118,20 @@ export class List<Id extends string | number, T extends Item<Id>> {
         } else {
             return new List(newItems, previous);
         }
+    }
+
+    private insertAllSorted(values: T[]): List<Id, T> {
+        if (values.length === 0) return this;
+
+        throw new Error("Not implemented");
+    }
+
+    insertAll(values: T[]): List<Id, T> {
+        if (values.length === 0) return this;
+
+        return this.insertAllSorted(
+            values.slice().sort((a, b) => (a.id > b.id ? -1 : 1)),
+        );
     }
 
     /**
