@@ -8,7 +8,7 @@ export const CHUNK_SIZE = 32;
  * Elements with higher id are placed first.
  * It's implemented as a deque (a single linked list of chunks).
  */
-export class List<Id extends string | number, T extends Item<Id>> {
+export class List<T extends Item<string | number>> {
     /**
      * Items sorted by id. Items should not contain more than CHUNK_SIZE elements.
      * @internal
@@ -17,9 +17,9 @@ export class List<Id extends string | number, T extends Item<Id>> {
     /**
      * @internal
      */
-    readonly previous: List<Id, T> | undefined;
+    readonly previous: List<T> | undefined;
 
-    constructor(items: T[], previous: List<Id, T> | undefined) {
+    constructor(items: T[], previous: List<T> | undefined) {
         this.items = items;
         this.previous = previous;
     }
@@ -27,7 +27,7 @@ export class List<Id extends string | number, T extends Item<Id>> {
     /**
      * The latest id in the list.
      */
-    get maxId(): Id | undefined {
+    get maxId(): Item.Key<T> | undefined {
         const { items, previous } = this;
         if (items.length) return items[0].id;
         return previous?.maxId;
@@ -42,7 +42,7 @@ export class List<Id extends string | number, T extends Item<Id>> {
         return items.length !== 0 || (previous?.isNotEmpty() ?? false);
     }
 
-    has(id: Id): boolean {
+    has(id: Item.Key<T>): boolean {
         const { maxId, items, previous } = this;
         const l = items.length;
         if (maxId && id > maxId) return false;
@@ -50,7 +50,7 @@ export class List<Id extends string | number, T extends Item<Id>> {
         return items.some((i) => i.id === id);
     }
 
-    get(id: Id): T | undefined {
+    get(id: Item.Key<T>): T | undefined {
         const { maxId, items, previous } = this;
         const l = items.length;
 
@@ -64,7 +64,7 @@ export class List<Id extends string | number, T extends Item<Id>> {
         return items.find((i) => i.id === id);
     }
 
-    insert(value: T): List<Id, T> {
+    insert(value: T): List<T> {
         const { items, previous } = this;
         const { id } = value;
         const l = items.length;
@@ -106,7 +106,7 @@ export class List<Id extends string | number, T extends Item<Id>> {
     /**
      * Split the current chunk if it has more than CHUNK_SIZE elements.
      */
-    private split(): List<Id, T> {
+    private split(): List<T> {
         const { items, previous } = this;
         const l = items.length;
         if (l > CHUNK_SIZE) {
@@ -124,26 +124,26 @@ export class List<Id extends string | number, T extends Item<Id>> {
 
             return chunks.reverse().reduce((list, chunk) => {
                 return new List(chunk, list);
-            }, previous) as List<Id, T>;
+            }, previous) as List<T>;
         } else {
             return this;
         }
     }
 
-    private insertAllSorted(values: T[]): List<Id, T> {
+    private insertAllSorted(values: T[]): List<T> {
         if (values.length === 0) return this;
         if (values.length === 1) return this.insert(values[0]);
 
         const { maxId, items, previous } = this;
 
         if (this.isEmpty() || !maxId) {
-            return new List<Id, T>(values, undefined).split();
+            return new List<T>(values, undefined).split();
         }
         const l = items.length;
         const minId = items[l - 1].id; // minimal id in the current chunk
 
         if (maxId && values[values.length - 1].id > maxId) {
-            return new List<Id, T>(values, this).split();
+            return new List<T>(values, this).split();
         }
 
         if (values[0].id < minId) {
@@ -151,10 +151,7 @@ export class List<Id extends string | number, T extends Item<Id>> {
                 const updated = previous.insertAllSorted(values);
                 return updated === previous ? this : new List(items, updated);
             } else {
-                return new List<Id, T>(
-                    [...items, ...values],
-                    undefined,
-                ).split();
+                return new List<T>([...items, ...values], undefined).split();
             }
         }
 
@@ -162,7 +159,7 @@ export class List<Id extends string | number, T extends Item<Id>> {
         const inside: T[] = [];
         const larger: T[] = [];
 
-        const insideIds = new Set<Id>();
+        const insideIds = new Set<Item.Key<T>>();
 
         values.forEach((value) => {
             if (value.id < minId) {
@@ -190,7 +187,7 @@ export class List<Id extends string | number, T extends Item<Id>> {
                 return this.insertAllSorted(smaller).insertAllSorted(larger);
             }
 
-            return new List<Id, T>(updated, previous)
+            return new List<T>(updated, previous)
                 .split()
                 .insertAllSorted(smaller)
                 .insertAllSorted(larger);
@@ -201,7 +198,7 @@ export class List<Id extends string | number, T extends Item<Id>> {
      * Insert a list of items in the correct order.
      * If an inserted item has the same id as an existing one, it will replace the existing one.
      */
-    insertAll(values: T[]): List<Id, T> {
+    insertAll(values: T[]): List<T> {
         if (values.length === 0) return this;
 
         return this.insertAllSorted(
@@ -213,7 +210,7 @@ export class List<Id extends string | number, T extends Item<Id>> {
      * Iterate over items starting from the given id.
      * This iteration method skips unreferenced items, it follows the chain of `previous` field references.
      */
-    *iterate(startFrom: Id): Generator<T> {
+    *iterate(startFrom: Item.Key<T>): Generator<T> {
         let lookingFor = startFrom;
         for (const item of this) {
             const { id, previous } = item;
@@ -246,7 +243,7 @@ export class List<Id extends string | number, T extends Item<Id>> {
      */
     isValid(): boolean {
         let previous: T | undefined;
-        const ids = new Set<Id>();
+        const ids = new Set<Item.Key<T>>();
         for (const item of this) {
             // ids are sorted
             if (previous && previous.id <= item.id) return false;
@@ -263,11 +260,7 @@ export class List<Id extends string | number, T extends Item<Id>> {
         }
 
         // all chunks are not too big
-        for (
-            let list: List<Id, T> | undefined = this;
-            list;
-            list = list.previous
-        ) {
+        for (let list: List<T> | undefined = this; list; list = list.previous) {
             if (list.items.length > CHUNK_SIZE) return false;
         }
 

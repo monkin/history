@@ -13,7 +13,7 @@ function createItem(id: number, previous?: number): MyItem {
 describe("List", () => {
     describe("insert", () => {
         it("should insert items and maintain descending order by ID", () => {
-            let list = new List<number, MyItem>([], undefined);
+            let list = new List<MyItem>([], undefined);
             const item1 = createItem(10);
             const item2 = createItem(20);
             const item3 = createItem(5);
@@ -39,7 +39,7 @@ describe("List", () => {
         });
 
         it("should replace an item with the same ID but different content", () => {
-            let list = new List<number, MyItem>([], undefined);
+            let list = new List<MyItem>([], undefined);
             const item1 = createItem(10);
             const item2 = createItem(5);
             const item1_v2 = createItem(10, 5);
@@ -57,7 +57,7 @@ describe("List", () => {
         });
 
         it("should split into multiple chunks when inserting more than CHUNK_SIZE items", () => {
-            let list = new List<number, MyItem>([], undefined);
+            let list = new List<MyItem>([], undefined);
 
             // Insert 100 items
             for (let i = 0; i < 100; i++) {
@@ -68,7 +68,7 @@ describe("List", () => {
 
             // Check that we have multiple chunks
             let chunks = 0;
-            let curr: List<number, MyItem> | undefined = list;
+            let curr: List<MyItem> | undefined = list;
             while (curr) {
                 chunks++;
                 expect(curr.items.length).toBeLessThanOrEqual(CHUNK_SIZE);
@@ -89,7 +89,7 @@ describe("List", () => {
         });
 
         it("should insert items in the middle of a chunk and maintain order", () => {
-            let list = new List<number, MyItem>([], undefined);
+            let list = new List<MyItem>([], undefined);
 
             list = list.insert(createItem(10));
             list = list.insert(createItem(5));
@@ -100,7 +100,7 @@ describe("List", () => {
         });
 
         it("should create a new chunk when inserting an item larger than maxId into a full chunk", () => {
-            let list = new List<number, MyItem>([], undefined);
+            let list = new List<MyItem>([], undefined);
             for (let i = 0; i < CHUNK_SIZE; i++) {
                 list = list.insert(createItem(i));
             }
@@ -116,7 +116,7 @@ describe("List", () => {
         });
 
         it("should create a new previous chunk when inserting an item smaller than minId into a full chunk", () => {
-            let list = new List<number, MyItem>([], undefined);
+            let list = new List<MyItem>([], undefined);
             for (let i = 1; i <= CHUNK_SIZE; i++) {
                 list = list.insert(createItem(i));
             }
@@ -131,7 +131,7 @@ describe("List", () => {
         });
 
         it("should split a full chunk when inserting an item into its middle", () => {
-            let list = new List<number, MyItem>([], undefined);
+            let list = new List<MyItem>([], undefined);
             for (let i = 0; i < CHUNK_SIZE; i++) {
                 list = list.insert(createItem(i * 10));
             }
@@ -150,7 +150,7 @@ describe("List", () => {
         });
 
         it("should insert an item into the appropriate older chunk based on its ID", () => {
-            let list = new List<number, MyItem>([], undefined);
+            let list = new List<MyItem>([], undefined);
             for (let i = 0; i < 100; i++) {
                 list = list.insert(createItem(i * 10));
             }
@@ -167,7 +167,7 @@ describe("List", () => {
         });
 
         it("should correctly replace the first or last item within a chunk", () => {
-            let list = new List<number, MyItem>([], undefined);
+            let list = new List<MyItem>([], undefined);
             for (let i = 0; i < CHUNK_SIZE; i++) {
                 list = list.insert(createItem(i));
             }
@@ -189,7 +189,7 @@ describe("List", () => {
         });
 
         it("should correctly replace an item in an older chunk", () => {
-            let list = new List<number, MyItem>([], undefined);
+            let list = new List<MyItem>([], undefined);
             for (let i = 0; i < 100; i++) {
                 list = list.insert(createItem(i * 10));
             }
@@ -204,13 +204,13 @@ describe("List", () => {
 
     describe("insertAll", () => {
         it("should return the same list when inserting an empty array", () => {
-            const list = new List<number, MyItem>([], undefined);
+            const list = new List<MyItem>([], undefined);
             const result = list.insertAll([]);
             expect(result).toBe(list);
         });
 
         it("should insert items into an empty list and maintain descending order", () => {
-            const list = new List<number, MyItem>([], undefined);
+            const list = new List<MyItem>([], undefined);
             const items = [createItem(10), createItem(20), createItem(5)];
             const result = list.insertAll(items);
             expect(Array.from(result)).toEqual([items[1], items[0], items[2]]);
@@ -220,7 +220,7 @@ describe("List", () => {
         it("should insert items into a non-empty list and merge correctly", () => {
             const initialItem1 = createItem(15);
             const initialItem2 = createItem(5);
-            const list = new List<number, MyItem>([], undefined).insertAll([
+            const list = new List<MyItem>([], undefined).insertAll([
                 initialItem1,
                 initialItem2,
             ]);
@@ -241,7 +241,7 @@ describe("List", () => {
         it("should replace multiple existing items when using insertAll", () => {
             const item1 = createItem(10);
             const item2 = createItem(5);
-            const list = new List<number, MyItem>([], undefined).insertAll([
+            const list = new List<MyItem>([], undefined).insertAll([
                 item1,
                 item2,
             ]);
@@ -259,7 +259,7 @@ describe("List", () => {
             for (let i = 0; i < CHUNK_SIZE; i++) {
                 initialItems.push(createItem(i * 10));
             }
-            const list = new List<number, MyItem>([], undefined).insertAll(
+            const list = new List<MyItem>([], undefined).insertAll(
                 initialItems,
             );
 
@@ -289,7 +289,7 @@ describe("List", () => {
             for (let i = 0; i < CHUNK_SIZE + 10; i++) {
                 items.push(createItem(i));
             }
-            const result = new List<number, MyItem>([], undefined).insertAll(
+            const result = new List<MyItem>([], undefined).insertAll(
                 items,
             );
             expect(result.isValid()).toBe(true);
@@ -298,7 +298,7 @@ describe("List", () => {
         });
 
         it("should prepend new chunks when all items in insertAll are larger than the current maxId", () => {
-            const list = new List<number, MyItem>([], undefined).insertAll([
+            const list = new List<MyItem>([], undefined).insertAll([
                 createItem(10),
                 createItem(5),
             ]);
@@ -314,7 +314,7 @@ describe("List", () => {
         });
 
         it("should append to the end when all items in insertAll are smaller than the current minId", () => {
-            const list = new List<number, MyItem>([], undefined).insertAll([
+            const list = new List<MyItem>([], undefined).insertAll([
                 createItem(30),
                 createItem(20),
             ]);
@@ -330,7 +330,7 @@ describe("List", () => {
         });
 
         it("should include all items when input to insertAll contains duplicate IDs, even if it results in an invalid list", () => {
-            const list = new List<number, MyItem>([], undefined);
+            const list = new List<MyItem>([], undefined);
             const item1 = createItem(10, 1);
             const item1_alt = createItem(10, 2);
 
@@ -344,7 +344,7 @@ describe("List", () => {
             for (let i = 0; i < 100; i++) {
                 items.push(createItem(i * 10));
             }
-            const list = new List<number, MyItem>([], undefined).insertAll(
+            const list = new List<MyItem>([], undefined).insertAll(
                 items,
             );
 
@@ -368,7 +368,7 @@ describe("List", () => {
             const item1 = createItem(20);
             const item2 = createItem(10);
             const item3 = createItem(5);
-            const list = new List<number, MyItem>([], undefined).insertAll([
+            const list = new List<MyItem>([], undefined).insertAll([
                 item1,
                 item2,
                 item3,
@@ -387,7 +387,7 @@ describe("List", () => {
             const item1 = createItem(20);
             const item2 = createItem(10);
             const item3 = createItem(5);
-            const list = new List<number, MyItem>([], undefined).insertAll([
+            const list = new List<MyItem>([], undefined).insertAll([
                 item1,
                 item2,
                 item3,
@@ -402,7 +402,7 @@ describe("List", () => {
             for (let i = 0; i < CHUNK_SIZE + 1; i++) {
                 items.push(createItem(i));
             }
-            const result = new List<number, MyItem>([], undefined).insertAll(
+            const result = new List<MyItem>([], undefined).insertAll(
                 items,
             );
             expect(result.isValid()).toBe(true);
@@ -416,7 +416,7 @@ describe("List", () => {
             for (let i = 0; i < CHUNK_SIZE * 2; i++) {
                 items.push(createItem(i));
             }
-            const result = new List<number, MyItem>([], undefined).insertAll(
+            const result = new List<MyItem>([], undefined).insertAll(
                 items,
             );
             expect(result.isValid()).toBe(true);
@@ -431,7 +431,7 @@ describe("List", () => {
             for (let i = 0; i < 200; i++) {
                 items.push(createItem(i));
             }
-            const result = new List<number, MyItem>([], undefined).insertAll(
+            const result = new List<MyItem>([], undefined).insertAll(
                 items,
             );
             expect(result.isValid()).toBe(true);
@@ -439,7 +439,7 @@ describe("List", () => {
 
             // Check that we have multiple chunks
             let chunks = 0;
-            let curr: List<number, MyItem> | undefined = result;
+            let curr: List<MyItem> | undefined = result;
             while (curr) {
                 chunks++;
                 expect(curr.items.length).toBeLessThanOrEqual(CHUNK_SIZE);
@@ -454,7 +454,7 @@ describe("List", () => {
             for (let i = 0; i < 100; i++) {
                 initialItems.push(createItem(i));
             }
-            const list = new List<number, MyItem>([], undefined).insertAll(
+            const list = new List<MyItem>([], undefined).insertAll(
                 initialItems,
             );
 
