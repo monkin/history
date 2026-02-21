@@ -17,7 +17,7 @@
     },
     "scripts": {
         "dev": "vite",
-        "build": "vite build && tsc",
+        "build": "tsc --noEmit && vite build",
         "preview": "vite preview",
         "lint": "biome check .",
         "format": "biome format . --write",
@@ -27,6 +27,7 @@
         "@biomejs/biome": "^2.4.3",
         "typescript": "^5.9.3",
         "vite": "^8.0.0-beta.15",
+        "vite-plugin-dts": "^4.5.4",
         "vitest": "^4.0.18"
     }
 }

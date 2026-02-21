@@ -9,17 +9,17 @@ export const CHUNK_SIZE = 32;
  * It's implemented as a deque (a single linked list of chunks).
  */
 export class List<Id extends string | number, T extends Item<Id>> {
-    constructor(
-        /**
-         * Items sorted by id. Items should not contain more than CHUNK_SIZE elements.
-         * @internal
-         */
-        readonly items: T[],
-        /**
-         * @internal
-         */
-        readonly previous: List<Id, T> | undefined,
-    ) {
+    /**
+     * Items sorted by id. Items should not contain more than CHUNK_SIZE elements.
+     * @internal
+     */
+    readonly items: T[];
+    /**
+     * @internal
+     */
+    readonly previous: List<Id, T> | undefined;
+
+    constructor(items: T[], previous: List<Id, T> | undefined) {
         this.items = items;
         this.previous = previous;
     }
