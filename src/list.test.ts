@@ -275,5 +275,120 @@ describe("List", () => {
             ].sort((a, b) => b.id - a.id);
             expect(Array.from(result)).toEqual(expected);
         });
+
+        it("should return the same list when inserted items are already present", () => {
+            const item1 = createItem(20);
+            const item2 = createItem(10);
+            const item3 = createItem(5);
+            const list = new List<number, MyItem>([], undefined).insertAll([
+                item1,
+                item2,
+                item3,
+            ]);
+
+            // Inserting same instances
+            const result = list.insertAll([item1, item2, item3]);
+            expect(result).toBe(list);
+
+            // Inserting some subset
+            const result2 = list.insertAll([item1, item3]);
+            expect(result2).toBe(list);
+        });
+
+        it("should return the same list when inserted items are identical to existing even with different order", () => {
+            const item1 = createItem(20);
+            const item2 = createItem(10);
+            const item3 = createItem(5);
+            const list = new List<number, MyItem>([], undefined).insertAll([
+                item1,
+                item2,
+                item3,
+            ]);
+
+            const result = list.insertAll([item3, item1, item2]);
+            expect(result).toBe(list);
+        });
+
+        it("should handle inserting exactly 33 items (CHUNK_SIZE + 1) into an empty list", () => {
+            const items: MyItem[] = [];
+            for (let i = 0; i < CHUNK_SIZE + 1; i++) {
+                items.push(createItem(i));
+            }
+            const result = new List<number, MyItem>([], undefined).insertAll(
+                items,
+            );
+            expect(result.isValid()).toBe(true);
+            expect(Array.from(result).length).toBe(CHUNK_SIZE + 1);
+            expect(result.items.length).toBe(1); // Head should have 1 item
+            expect(result.previous?.items.length).toBe(CHUNK_SIZE); // Previous should have 32
+        });
+
+        it("should handle inserting exactly 64 items (2 * CHUNK_SIZE) into an empty list", () => {
+            const items: MyItem[] = [];
+            for (let i = 0; i < CHUNK_SIZE * 2; i++) {
+                items.push(createItem(i));
+            }
+            const result = new List<number, MyItem>([], undefined).insertAll(
+                items,
+            );
+            expect(result.isValid()).toBe(true);
+            expect(Array.from(result).length).toBe(CHUNK_SIZE * 2);
+            expect(result.items.length).toBe(CHUNK_SIZE);
+            expect(result.previous?.items.length).toBe(CHUNK_SIZE);
+            expect(result.previous?.previous).toBeUndefined();
+        });
+
+        it("should handle inserting 200 items into an empty list", () => {
+            const items: MyItem[] = [];
+            for (let i = 0; i < 200; i++) {
+                items.push(createItem(i));
+            }
+            const result = new List<number, MyItem>([], undefined).insertAll(
+                items,
+            );
+            expect(result.isValid()).toBe(true);
+            expect(Array.from(result).length).toBe(200);
+
+            // Check that we have multiple chunks
+            let chunks = 0;
+            let curr: List<number, MyItem> | undefined = result;
+            while (curr) {
+                chunks++;
+                expect(curr.items.length).toBeLessThanOrEqual(CHUNK_SIZE);
+                curr = curr.previous;
+            }
+            expect(chunks).toBe(Math.ceil(200 / CHUNK_SIZE));
+        });
+
+        it("should handle inserting 100 items with replacements into an existing multi-chunk list", () => {
+            // Setup a list with 100 items: [99, 98, ..., 0]
+            const initialItems: MyItem[] = [];
+            for (let i = 0; i < 100; i++) {
+                initialItems.push(createItem(i));
+            }
+            const list = new List<number, MyItem>([], undefined).insertAll(
+                initialItems,
+            );
+
+            // New items: [150, 149, ..., 0]
+            // This will add 51 new items and replace 100 existing items
+            const newItems: MyItem[] = [];
+            for (let i = 0; i <= 150; i++) {
+                newItems.push(createItem(i, i > 0 ? i - 1 : undefined));
+            }
+
+            const result = list.insertAll(newItems);
+            expect(result.isValid()).toBe(true);
+            expect(Array.from(result).length).toBe(151);
+
+            // Verify that all items have the updated 'previous' field
+            for (const item of result) {
+                if (item.id > 0) {
+                    expect(item.previous).toBe(item.id - 1);
+                } else {
+                    expect(item.previous).toBeUndefined();
+                }
+            }
+        });
     });
 });
