@@ -132,17 +132,67 @@ export class List<Id extends string | number, T extends Item<Id>> {
 
     private insertAllSorted(values: T[]): List<Id, T> {
         if (values.length === 0) return this;
+        if (values.length === 1) return this.insert(values[0]);
 
-        /**const maxValueId = values[0].id;
-        const minValueId = values[values.length - 1].id;
+        const { maxId, items, previous } = this;
 
-        if (this.maxId && maxValueId > this.maxId) {
-            return new List(values, this);
-        }*/
+        if (this.isEmpty() || !maxId) {
+            return new List<Id, T>(values, undefined).split();
+        }
+        const l = items.length;
+        const minId = items[l - 1].id; // minimal id in the current chunk
 
-        throw new Error("Not implemented");
+        if (maxId && values[values.length - 1].id > maxId) {
+            return new List<Id, T>(values, this).split();
+        }
+
+        if (values[0].id < minId) {
+            if (previous) {
+                return previous.insertAllSorted(values);
+            } else {
+                return new List<Id, T>(
+                    [...items, ...values],
+                    undefined,
+                ).split();
+            }
+        }
+
+        const smaller: T[] = [];
+        const inside: T[] = [];
+        const larger: T[] = [];
+
+        const insideIds = new Set<Id>();
+
+        values.forEach((value) => {
+            if (value.id < minId) {
+                smaller.push(value);
+            } else if (value.id <= maxId) {
+                insideIds.add(value.id);
+                inside.push(value);
+            } else {
+                larger.push(value);
+            }
+        });
+
+        if (inside.length === 0) {
+            return this.insertAllSorted(smaller).insertAllSorted(larger);
+        } else {
+            return new List<Id, T>(
+                [...items.filter((i) => !insideIds.has(i.id)), ...inside].sort(
+                    (a, b) => (a.id > b.id ? -1 : 1),
+                ),
+                previous,
+            )
+                .split()
+                .insertAllSorted(smaller)
+                .insertAllSorted(larger);
+        }
     }
 
+    /**
+     * Insert a list of items in the correct order.
+     * If an inserted item has the same id as an existing one, it will replace the existing one.
+     */
     insertAll(values: T[]): List<Id, T> {
         if (values.length === 0) return this;
 
