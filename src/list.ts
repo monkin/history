@@ -103,9 +103,9 @@ export class List<Id extends string | number, T extends Item<Id>> {
         if (newItems.length > CHUNK_SIZE) {
             const last = newItems.shift() as T;
             return new List([last], new List(newItems, previous));
+        } else {
+            return new List(newItems, previous);
         }
-
-        return new List(newItems, previous);
     }
 
     /**
