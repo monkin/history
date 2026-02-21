@@ -178,12 +178,19 @@ export class List<Id extends string | number, T extends Item<Id>> {
         if (inside.length === 0) {
             return this.insertAllSorted(smaller).insertAllSorted(larger);
         } else {
-            return new List<Id, T>(
-                [...items.filter((i) => !insideIds.has(i.id)), ...inside].sort(
-                    (a, b) => (a.id > b.id ? -1 : 1),
-                ),
-                previous,
-            )
+            const updated = [
+                ...items.filter((i) => !insideIds.has(i.id)),
+                ...inside,
+            ].sort((a, b) => (a.id > b.id ? -1 : 1));
+
+            if (
+                updated.length === items.length &&
+                updated.every((v, i) => items[i] === v)
+            ) {
+                return this.insertAllSorted(smaller).insertAllSorted(larger);
+            }
+
+            return new List<Id, T>(updated, previous)
                 .split()
                 .insertAllSorted(smaller)
                 .insertAllSorted(larger);
