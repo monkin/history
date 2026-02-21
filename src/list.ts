@@ -221,7 +221,7 @@ export class List<T extends Entry<string | number, unknown>> {
                 } else {
                     break;
                 }
-            } else if (id < (lookingFor as any)) {
+            } else if (id < lookingFor) {
                 break;
             }
         }
