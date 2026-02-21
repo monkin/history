@@ -1,4 +1,4 @@
-import type { Item } from "./item.ts";
+import type { Entry } from "./entry.ts";
 
 /** @internal */
 export const CHUNK_SIZE = 32;
@@ -8,7 +8,7 @@ export const CHUNK_SIZE = 32;
  * Elements with higher id (latest operations) are placed first.
  * It's implemented as a deque (a single linked list of chunks).
  */
-export class List<T extends Item<string | number>> {
+export class List<T extends Entry<string | number, unknown>> {
     /**
      * Items sorted by id. Items should not contain more than CHUNK_SIZE elements.
      * @internal
@@ -27,7 +27,7 @@ export class List<T extends Item<string | number>> {
     /**
      * The latest id in the list.
      */
-    get maxId(): Item.Key<T> | undefined {
+    get maxId(): Entry.Key<T> | undefined {
         const { items, previous } = this;
         if (items.length) return items[0].id;
         return previous?.maxId;
@@ -42,7 +42,7 @@ export class List<T extends Item<string | number>> {
         return items.length !== 0 || (previous?.isNotEmpty() ?? false);
     }
 
-    has(id: Item.Key<T>): boolean {
+    has(id: Entry.Key<T>): boolean {
         const { maxId, items, previous } = this;
         const l = items.length;
         if (maxId && id > maxId) return false;
@@ -50,7 +50,7 @@ export class List<T extends Item<string | number>> {
         return items.some((i) => i.id === id);
     }
 
-    get(id: Item.Key<T>): T | undefined {
+    get(id: Entry.Key<T>): T | undefined {
         const { maxId, items, previous } = this;
         const l = items.length;
 
@@ -159,7 +159,7 @@ export class List<T extends Item<string | number>> {
         const inside: T[] = [];
         const larger: T[] = [];
 
-        const insideIds = new Set<Item.Key<T>>();
+        const insideIds = new Set<Entry.Key<T>>();
 
         values.forEach((value) => {
             if (value.id < minId) {
@@ -210,14 +210,18 @@ export class List<T extends Item<string | number>> {
      * Iterate over items starting from the given id.
      * This iteration method skips unreferenced items, it follows the chain of `previous` field references.
      */
-    *iterate(startFrom: Item.Key<T>): Generator<T> {
+    *iterate(startFrom: Entry.Key<T>): Generator<T> {
         let lookingFor = startFrom;
         for (const item of this) {
             const { id, previous } = item;
-            if (id === lookingFor) yield item;
-            if (previous) {
-                lookingFor = previous;
-            } else {
+            if (id === lookingFor) {
+                yield item;
+                if (previous !== undefined) {
+                    lookingFor = previous;
+                } else {
+                    break;
+                }
+            } else if (id < (lookingFor as any)) {
                 break;
             }
         }
@@ -243,7 +247,7 @@ export class List<T extends Item<string | number>> {
      */
     isValid(): boolean {
         let previous: T | undefined;
-        const ids = new Set<Item.Key<T>>();
+        const ids = new Set<Entry.Key<T>>();
         for (const item of this) {
             // ids are sorted
             if (previous && previous.id <= item.id) return false;
