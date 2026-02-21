@@ -33,15 +33,6 @@ export class List<Id extends string | number, T extends Item<Id>> {
         return previous?.maxId;
     }
 
-    /**
-     * The earliest id in the list.
-     */
-    get minId(): Id | undefined {
-        const { items, previous } = this;
-        if (items.length) return items[items.length - 1].id;
-        return previous?.minId;
-    }
-
     isEmpty(): boolean {
         return !this.isNotEmpty();
     }
@@ -106,22 +97,48 @@ export class List<Id extends string | number, T extends Item<Id>> {
             return new List(newItems, previous);
         }
 
-        const newItems = [
-            ...items.slice(0, index),
-            value,
-            ...items.slice(index),
-        ];
+        return new List(
+            [...items.slice(0, index), value, ...items.slice(index)],
+            previous,
+        ).split();
+    }
 
-        if (newItems.length > CHUNK_SIZE) {
-            const last = newItems.shift() as T;
-            return new List([last], new List(newItems, previous));
+    /**
+     * Split the current chunk if it has more than CHUNK_SIZE elements.
+     */
+    private split(): List<Id, T> {
+        const { items, previous } = this;
+        const l = items.length;
+        if (l > CHUNK_SIZE) {
+            const chunks: T[][] = [];
+            const count = Math.ceil(l / CHUNK_SIZE);
+
+            for (let i = 0; i < count; i++) {
+                const offset = l - CHUNK_SIZE * i;
+                chunks.push(
+                    items.slice(Math.max(0, offset - CHUNK_SIZE), offset),
+                );
+            }
+
+            chunks.reverse();
+
+            return chunks.reverse().reduce((list, chunk) => {
+                return new List(chunk, list);
+            }, previous) as List<Id, T>;
         } else {
-            return new List(newItems, previous);
+            return this;
         }
     }
 
     private insertAllSorted(values: T[]): List<Id, T> {
         if (values.length === 0) return this;
+
+        /**const maxValueId = values[0].id;
+        const minValueId = values[values.length - 1].id;
+
+        if (this.maxId && maxValueId > this.maxId) {
+            return new List(values, this);
+        }*/
 
         throw new Error("Not implemented");
     }
