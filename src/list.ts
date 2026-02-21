@@ -94,7 +94,12 @@ export class List<Id extends string | number, T extends Item<Id>> {
             return new List(newItems, previous);
         }
 
-        const newItems = [...items].splice(index, 0, value);
+        const newItems = [
+            ...items.slice(0, index),
+            value,
+            ...items.slice(index),
+        ];
+
         if (newItems.length > CHUNK_SIZE) {
             const last = newItems.shift() as T;
             return new List([last], new List(newItems, previous));
