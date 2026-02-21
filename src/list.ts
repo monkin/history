@@ -148,7 +148,8 @@ export class List<Id extends string | number, T extends Item<Id>> {
 
         if (values[0].id < minId) {
             if (previous) {
-                return previous.insertAllSorted(values);
+                const updated = previous.insertAllSorted(values);
+                return updated === previous ? this : new List(items, updated);
             } else {
                 return new List<Id, T>(
                     [...items, ...values],

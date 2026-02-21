@@ -113,4 +113,167 @@ describe("List", () => {
         expect(list.get(0)?.id).toBe(0);
         expect(list.get(CHUNK_SIZE)?.id).toBe(CHUNK_SIZE);
     });
+
+    describe("insertAll", () => {
+        it("should return the same list when inserting an empty array", () => {
+            const list = new List<number, MyItem>([], undefined);
+            const result = list.insertAll([]);
+            expect(result).toBe(list);
+        });
+
+        it("should insert items into an empty list and maintain descending order", () => {
+            const list = new List<number, MyItem>([], undefined);
+            const items = [createItem(10), createItem(20), createItem(5)];
+            const result = list.insertAll(items);
+            expect(Array.from(result)).toEqual([items[1], items[0], items[2]]);
+            expect(result.isValid()).toBe(true);
+        });
+
+        it("should insert items into a non-empty list and merge correctly", () => {
+            const initialItem1 = createItem(15);
+            const initialItem2 = createItem(5);
+            const list = new List<number, MyItem>([], undefined).insertAll([
+                initialItem1,
+                initialItem2,
+            ]);
+
+            const newItem1 = createItem(20);
+            const newItem2 = createItem(10);
+            const result = list.insertAll([newItem1, newItem2]);
+
+            expect(Array.from(result)).toEqual([
+                newItem1,
+                initialItem1,
+                newItem2,
+                initialItem2,
+            ]);
+            expect(result.isValid()).toBe(true);
+        });
+
+        it("should handle replacements in insertAll", () => {
+            const item1 = createItem(10);
+            const item2 = createItem(5);
+            const list = new List<number, MyItem>([], undefined).insertAll([
+                item1,
+                item2,
+            ]);
+
+            const item1_v2 = createItem(10, 5); // now it has a valid previous (5 is in list)
+            const item3 = createItem(15);
+
+            const result = list.insertAll([item1_v2, item3]);
+            expect(Array.from(result)).toEqual([item3, item1_v2, item2]);
+            expect(result.isValid()).toBe(true);
+        });
+
+        it("should handle mixed insertion and replacement across chunks", () => {
+            const initialItems: MyItem[] = [];
+            for (let i = 0; i < CHUNK_SIZE; i++) {
+                initialItems.push(createItem(i * 10));
+            }
+            const list = new List<number, MyItem>([], undefined).insertAll(
+                initialItems,
+            );
+
+            const newItems: MyItem[] = [];
+            for (let i = 0; i < CHUNK_SIZE; i++) {
+                newItems.push(createItem(i * 10 + 5)); // new items
+                newItems.push(createItem(i * 10)); // replacements
+            }
+
+            const result = list.insertAll(newItems);
+            expect(result.isValid()).toBe(true);
+
+            const allItems = Array.from(result);
+            expect(allItems.length).toBe(CHUNK_SIZE * 2);
+
+            // Expected order: descending
+            const expected: MyItem[] = [];
+            for (let i = CHUNK_SIZE - 1; i >= 0; i--) {
+                expected.push(newItems[i * 2]); // i*10 + 5
+                expected.push(newItems[i * 2 + 1]); // i*10
+            }
+            expect(allItems).toEqual(expected);
+        });
+
+        it("should handle inserting more than CHUNK_SIZE items into an empty list", () => {
+            const items: MyItem[] = [];
+            for (let i = 0; i < CHUNK_SIZE + 10; i++) {
+                items.push(createItem(i));
+            }
+            const result = new List<number, MyItem>([], undefined).insertAll(
+                items,
+            );
+            expect(result.isValid()).toBe(true);
+            expect(Array.from(result).length).toBe(CHUNK_SIZE + 10);
+            expect(result.previous).toBeDefined();
+        });
+
+        it("should handle inserting items that are all larger than current maxId", () => {
+            const list = new List<number, MyItem>([], undefined).insertAll([
+                createItem(10),
+                createItem(5),
+            ]);
+            const newItems = [createItem(30), createItem(20)];
+            const result = list.insertAll(newItems);
+            expect(Array.from(result)).toEqual([
+                newItems[0],
+                newItems[1],
+                createItem(10),
+                createItem(5),
+            ]);
+            expect(result.isValid()).toBe(true);
+        });
+
+        it("should handle inserting items that are all smaller than current minId", () => {
+            const list = new List<number, MyItem>([], undefined).insertAll([
+                createItem(30),
+                createItem(20),
+            ]);
+            const newItems = [createItem(10), createItem(5)];
+            const result = list.insertAll(newItems);
+            expect(Array.from(result)).toEqual([
+                createItem(30),
+                createItem(20),
+                newItems[0],
+                newItems[1],
+            ]);
+            expect(result.isValid()).toBe(true);
+        });
+
+        it("should handle duplicate IDs in input array by keeping all of them (results in invalid list)", () => {
+            const list = new List<number, MyItem>([], undefined);
+            const item1 = createItem(10, 1);
+            const item1_alt = createItem(10, 2);
+
+            const result = list.insertAll([item1, item1_alt]);
+            expect(Array.from(result).length).toBe(2);
+            expect(result.isValid()).toBe(false);
+        });
+
+        it("should handle inserting into a list with multiple chunks", () => {
+            const items: MyItem[] = [];
+            for (let i = 0; i < 100; i++) {
+                items.push(createItem(i * 10));
+            }
+            const list = new List<number, MyItem>([], undefined).insertAll(
+                items,
+            );
+
+            const newItem1 = createItem(995); // Largest
+            const newItem2 = createItem(505); // Middle
+            const newItem3 = createItem(5); // Smallest
+
+            const result = list.insertAll([newItem1, newItem2, newItem3]);
+            expect(result.isValid()).toBe(true);
+
+            const expected = [
+                newItem1,
+                ...items.slice().reverse(),
+                newItem2,
+                newItem3,
+            ].sort((a, b) => b.id - a.id);
+            expect(Array.from(result)).toEqual(expected);
+        });
+    });
 });
