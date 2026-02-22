@@ -18,7 +18,7 @@ export class History<T extends Entry<string | number, unknown>> {
     ) {}
 
     get canUndo(): boolean {
-        return !!this.current;
+        return this.current !== undefined;
     }
 
     get canRedo(): boolean {
@@ -28,7 +28,7 @@ export class History<T extends Entry<string | number, unknown>> {
     undo(): History<T> {
         const { items, current } = this;
 
-        if (!current) return this;
+        if (current === undefined) return this;
 
         return new History(
             items,
@@ -37,5 +37,18 @@ export class History<T extends Entry<string | number, unknown>> {
         );
     }
 
-    redo() {}
+    redo(): History<T> {
+        const { items, current } = this;
+        const { maxId } = items;
+
+        if (current === maxId || maxId === undefined) return this;
+
+        for (const item of items.iterate(maxId)) {
+            if (item.previous === current) {
+                return new History(items, item.id, this.generateId);
+            }
+        }
+
+        return this;
+    }
 }
