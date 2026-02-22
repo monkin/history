@@ -16,4 +16,26 @@ export class History<T extends Entry<string | number, unknown>> {
          */
         readonly generateId: Entry.KeyGenerator<T>,
     ) {}
+
+    get canUndo(): boolean {
+        return !!this.current;
+    }
+
+    get canRedo(): boolean {
+        return this.items.maxId !== this.current;
+    }
+
+    undo(): History<T> {
+        const { items, current } = this;
+
+        if (!current) return this;
+
+        return new History(
+            items,
+            current && items.get(current)?.previous,
+            this.generateId,
+        );
+    }
+
+    redo() {}
 }
