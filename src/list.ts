@@ -205,7 +205,10 @@ export class List<T extends History.Entry<string | number, unknown>> {
      * Iterate over items starting from the given id.
      * This iteration method skips unreferenced items, it follows the chain of `previous` field references.
      */
-    *iterate(startFrom: History.Key<T>): Generator<T> {
+    *iterate(startFrom: History.Key<T> | undefined): Generator<T> {
+        // looks like the history is empty, or we made as many undo steps as possible
+        if (startFrom === undefined) return;
+
         let lookingFor = startFrom;
         for (const item of this) {
             const { id, previous } = item;
