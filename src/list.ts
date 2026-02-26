@@ -22,7 +22,7 @@ export class List<T extends History.Entry<string | number, unknown>> {
     /**
      * The latest id in the list.
      */
-    get maxId(): History.Entry.Key<T> | undefined {
+    get maxId(): History.Key<T> | undefined {
         const { items, previous } = this;
         if (items.length) return items[0].id;
         return previous?.maxId;
@@ -37,7 +37,7 @@ export class List<T extends History.Entry<string | number, unknown>> {
         return items.length !== 0 || (previous?.isNotEmpty() ?? false);
     }
 
-    has(id: History.Entry.Key<T>): boolean {
+    has(id: History.Key<T>): boolean {
         const { maxId, items, previous } = this;
         const l = items.length;
         if (maxId && id > maxId) return false;
@@ -45,7 +45,7 @@ export class List<T extends History.Entry<string | number, unknown>> {
         return items.some((i) => i.id === id);
     }
 
-    get(id: History.Entry.Key<T>): T | undefined {
+    get(id: History.Key<T>): T | undefined {
         const { maxId, items, previous } = this;
         const l = items.length;
 
@@ -154,7 +154,7 @@ export class List<T extends History.Entry<string | number, unknown>> {
         const inside: T[] = [];
         const larger: T[] = [];
 
-        const insideIds = new Set<History.Entry.Key<T>>();
+        const insideIds = new Set<History.Key<T>>();
 
         values.forEach((value) => {
             if (value.id < minId) {
@@ -205,7 +205,7 @@ export class List<T extends History.Entry<string | number, unknown>> {
      * Iterate over items starting from the given id.
      * This iteration method skips unreferenced items, it follows the chain of `previous` field references.
      */
-    *iterate(startFrom: History.Entry.Key<T>): Generator<T> {
+    *iterate(startFrom: History.Key<T>): Generator<T> {
         let lookingFor = startFrom;
         for (const item of this) {
             const { id, previous } = item;
@@ -242,7 +242,7 @@ export class List<T extends History.Entry<string | number, unknown>> {
      */
     isValid(): boolean {
         let previous: T | undefined;
-        const ids = new Set<History.Entry.Key<T>>();
+        const ids = new Set<History.Key<T>>();
         for (const item of this) {
             // ids are sorted
             if (previous && previous.id <= item.id) return false;

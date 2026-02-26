@@ -7,13 +7,13 @@ export class History<T extends History.Entry<string | number, unknown>> {
          * Pointer to the current entry in the history.
          * It can be moved by undo/redo operations.
          */
-        readonly current: History.Entry.Key<T> | undefined,
+        readonly current: History.Key<T> | undefined,
         /**
          * Function to generate a new unique key for an entry.
          * It receives the biggest Id in the history if any.
          * The generated key should be bigger than the provided one.
          */
-        readonly generateId: History.Entry.KeyGenerator<T>,
+        readonly generateId: History.KeyGenerator<T>,
     ) {}
 
     get canUndo(): boolean {
@@ -59,12 +59,10 @@ export namespace History {
         readonly value: Value;
     }
 
-    export namespace Entry {
-        export type Key<T extends Entry<string | number, unknown>> = T["id"];
-        export type Value<T extends Entry<string | number, unknown>> =
-            T["value"];
-        export type KeyGenerator<T extends Entry<string | number, unknown>> = (
-            maxKey: Key<T> | undefined,
-        ) => Key<T>;
-    }
+    export type Key<T extends Entry<string | number, unknown>> = T["id"];
+    export type Value<T extends Entry<string | number, unknown>> = T["value"];
+
+    export type KeyGenerator<T extends Entry<string | number, unknown>> = (
+        maxKey: Key<T> | undefined,
+    ) => Key<T>;
 }
