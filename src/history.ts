@@ -51,7 +51,7 @@ export class History<T extends History.Entry<string | number, unknown>> {
         return this;
     }
 
-    iterate(): Generator<T> {
+    [Symbol.iterator](): Generator<T> {
         return this.items.iterate(this.current);
     }
 }
