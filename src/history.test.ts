@@ -25,7 +25,7 @@ describe("History", () => {
         let list = new List<MyEntry>([], undefined);
         list = list.insert(item1).insert(item2).insert(item3);
 
-        const generateId: History.KeyGenerator<number, string> = (maxId) =>
+        const generateId: History.KeyGenerator<number> = (maxId) =>
             ((maxId as number) ?? 0) + 1;
 
         const history = new History<number, string>(
@@ -48,7 +48,7 @@ describe("History", () => {
         let list = new List<MyEntry>([], undefined);
         list = list.insert(item1).insert(item2).insert(item3);
 
-        const generateId: History.KeyGenerator<number, string> = (maxId) =>
+        const generateId: History.KeyGenerator<number> = (maxId) =>
             ((maxId as number) ?? 0) + 1;
 
         const history = new History<number, string>(
@@ -67,7 +67,7 @@ describe("History", () => {
         let list = new List<MyEntry>([], undefined);
         list = list.insert(item1);
 
-        const generateId: History.KeyGenerator<number, string> = (maxId) =>
+        const generateId: History.KeyGenerator<number> = (maxId) =>
             ((maxId as number) ?? 0) + 1;
 
         const history = new History<number, string>(
