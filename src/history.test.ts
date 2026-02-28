@@ -28,7 +28,12 @@ describe("History", () => {
         const generateId: History.KeyGenerator<number, string> = (maxId) =>
             ((maxId as number) ?? 0) + 1;
 
-        const history = new History<number, string>(list, 2, generateId);
+        const history = new History<number, string>(
+            list,
+            2,
+            undefined,
+            generateId,
+        );
 
         // Current is 2, so it should iterate 2 -> 1
         const iterated = Array.from(history);
@@ -46,7 +51,12 @@ describe("History", () => {
         const generateId: History.KeyGenerator<number, string> = (maxId) =>
             ((maxId as number) ?? 0) + 1;
 
-        const history = new History<number, string>(list, 3, generateId);
+        const history = new History<number, string>(
+            list,
+            3,
+            undefined,
+            generateId,
+        );
 
         const iterated = Array.from(history);
         expect(iterated).toEqual([item3, item2, item1]);
@@ -62,6 +72,7 @@ describe("History", () => {
 
         const history = new History<number, string>(
             list,
+            undefined,
             undefined,
             generateId,
         );
