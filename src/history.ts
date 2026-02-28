@@ -35,12 +35,12 @@ export class History<Key extends string | number, Operation> {
     }
 
     /**
-     * Replace the current operation.
+     * Replace the active operation.
      *
      * It works for continuous operations. Each time a new input is received,
      * the previous operation should be replaced.
      */
-    replace(operation: Operation): History<Key, Operation> {
+    update(operation: Operation): History<Key, Operation> {
         const { items, current } = this;
         if (!current) return this;
 
@@ -53,9 +53,9 @@ export class History<Key extends string | number, Operation> {
     }
 
     /**
-     * Remove the current operation.
+     * Remove the active operation.
      */
-    cancel() {
+    rollback() {
         const { items, current } = this;
         if (!current) return this;
 
