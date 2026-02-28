@@ -28,6 +28,10 @@ export class History<Key extends string | number, Operation> {
         return this.items.maxId !== this.current;
     }
 
+    /**
+     * Add a new operation to the history.
+     * The same as `history.add(operation).commit()`.
+     */
     add(operation: Operation): History<Key, Operation> {
         const { items, current, active, generateId } = this;
 
