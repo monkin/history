@@ -40,7 +40,7 @@ export class History<Key extends string | number, Operation> {
      * It works for continuous operations. Each time a new input is received,
      * the previous operation should be replaced.
      */
-    update(operation: Operation): History<Key, Operation> {
+    replace(operation: Operation): History<Key, Operation> {
         const { items, current } = this;
         if (!current) return this;
 
@@ -60,7 +60,7 @@ export class History<Key extends string | number, Operation> {
         if (!current) return this;
 
         const previous = items.get(current)?.previous;
-        return new History(items.remove(current), previous, this.generateId);
+        return new History(items, previous, this.generateId);
     }
 
     undo(): History<Key, Operation> {
