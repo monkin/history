@@ -59,6 +59,28 @@ export class List<T extends History.Entry<string | number, unknown>> {
         return items.find((i) => i.id === id);
     }
 
+    remove(id: History.Key<T>): List<T> {
+        const { items, previous, maxId } = this;
+        const l = items.length;
+
+        if (maxId === undefined || id > maxId) return this;
+
+        if (l === 0 || id < items[l - 1].id) {
+            if (!previous) return this;
+            const updated = previous.remove(id);
+            if (updated === previous) return this;
+            return l === 0 ? updated : new List(items, updated);
+        }
+
+        const index = items.findIndex((i) => i.id === id);
+        if (index === -1) return this;
+
+        const newItems = [...items.slice(0, index), ...items.slice(index + 1)];
+        if (newItems.length === 0) return previous ?? new List([], undefined);
+
+        return new List(newItems, previous);
+    }
+
     insert(value: T): List<T> {
         const { items, previous } = this;
         const { id } = value;

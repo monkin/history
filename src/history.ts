@@ -1,19 +1,19 @@
 import type { List } from "./list";
 
-export class History<T extends History.Entry<string | number, unknown>> {
+export class History<Key extends string | number, Operation> {
     constructor(
-        readonly items: List<T>,
+        readonly items: List<History.Entry<Key, Operation>>,
         /**
          * Pointer to the current entry in the history.
          * It can be moved by undo/redo operations.
          */
-        readonly current: History.Key<T> | undefined,
+        readonly current: Key | undefined,
         /**
          * Function to generate a new unique key for an entry.
          * It receives the biggest Id in the history if any.
          * The generated key should be bigger than the provided one.
          */
-        readonly generateId: History.KeyGenerator<T>,
+        readonly generateId: History.KeyGenerator<Key>,
     ) {}
 
     get canUndo(): boolean {
@@ -24,7 +24,46 @@ export class History<T extends History.Entry<string | number, unknown>> {
         return this.items.maxId !== this.current;
     }
 
-    undo(): History<T> {
+    add(operation: Operation): History<Key, Operation> {
+        const { items, current, generateId } = this;
+        const id = generateId(items.maxId);
+        return new History(
+            items.insert({ id, operation, previous: current }),
+            id,
+            generateId,
+        );
+    }
+
+    /**
+     * Replace the current operation.
+     *
+     * It works for continuous operations. Each time a new input is received,
+     * the previous operation should be replaced.
+     */
+    update(operation: Operation): History<Key, Operation> {
+        const { items, current } = this;
+        if (!current) return this;
+
+        const previous = items.get(current)?.previous;
+        return new History(
+            items.insert({ id: current, operation: operation, previous }),
+            current,
+            this.generateId,
+        );
+    }
+
+    /**
+     * Remove the current operation.
+     */
+    cancel() {
+        const { items, current } = this;
+        if (!current) return this;
+
+        const previous = items.get(current)?.previous;
+        return new History(items.remove(current), previous, this.generateId);
+    }
+
+    undo(): History<Key, Operation> {
         const { items, current } = this;
 
         if (current === undefined) return this;
@@ -36,7 +75,7 @@ export class History<T extends History.Entry<string | number, unknown>> {
         );
     }
 
-    redo(): History<T> {
+    redo(): History<Key, Operation> {
         const { items, current } = this;
         const { maxId } = items;
 
@@ -51,22 +90,23 @@ export class History<T extends History.Entry<string | number, unknown>> {
         return this;
     }
 
-    [Symbol.iterator](): Generator<T> {
+    [Symbol.iterator](): Generator<History.Entry<Key, Operation>> {
         return this.items.iterate(this.current);
     }
 }
 
 export namespace History {
-    export interface Entry<Id extends string | number, Value> {
+    export interface Entry<Id extends string | number, Operation> {
         readonly id: Id;
         readonly previous: Id | undefined;
-        readonly value: Value;
+        readonly operation: Operation;
     }
 
     export type Key<T extends Entry<string | number, unknown>> = T["id"];
-    export type Value<T extends Entry<string | number, unknown>> = T["value"];
+    export type Value<T extends Entry<string | number, unknown>> =
+        T["operation"];
 
-    export type KeyGenerator<T extends Entry<string | number, unknown>> = (
-        maxKey: Key<T> | undefined,
-    ) => Key<T>;
+    export type KeyGenerator<Key extends string | number> = (
+        maxKey: Key | undefined,
+    ) => Key;
 }

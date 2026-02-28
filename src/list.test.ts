@@ -5,7 +5,7 @@ import { CHUNK_SIZE, List } from "./list.ts";
 interface MyEntry extends History.Entry<number, string> {
     id: number;
     previous: number | undefined;
-    value: string;
+    operation: string;
 }
 
 function createItem(
@@ -13,7 +13,7 @@ function createItem(
     previous?: number,
     value: string = "test",
 ): MyEntry {
-    return { id, previous, value };
+    return { id, previous, operation: value };
 }
 
 describe("List", () => {
@@ -473,6 +473,100 @@ describe("List", () => {
                     expect(item.previous).toBeUndefined();
                 }
             }
+        });
+    });
+
+    describe("remove", () => {
+        it("should return the same list when removing from an empty list", () => {
+            const list = new List<MyEntry>([], undefined);
+            const result = list.remove(1);
+            expect(result).toBe(list);
+        });
+
+        it("should return the same list when the item is not found", () => {
+            let list = new List<MyEntry>([], undefined);
+            list = list.insert(createItem(10));
+            list = list.insert(createItem(5));
+
+            const result = list.remove(7);
+            expect(result).toBe(list);
+
+            const result2 = list.remove(12);
+            expect(result2).toBe(list);
+
+            const result3 = list.remove(3);
+            expect(result3).toBe(list);
+        });
+
+        it("should remove an item from the current chunk", () => {
+            let list = new List<MyEntry>([], undefined);
+            const item1 = createItem(10);
+            const item2 = createItem(5);
+            list = list.insert(item1).insert(item2);
+
+            const result = list.remove(10);
+            expect(result.has(10)).toBe(false);
+            expect(result.has(5)).toBe(true);
+            expect(Array.from(result)).toEqual([item2]);
+            expect(result.isValid()).toBe(true);
+        });
+
+        it("should remove an item from a previous chunk", () => {
+            let list = new List<MyEntry>([], undefined);
+            const items: MyEntry[] = [];
+            for (let i = 0; i < CHUNK_SIZE + 5; i++) {
+                items.push(createItem(i));
+            }
+            list = list.insertAll(items);
+
+            expect(list.items.length).toBe(5);
+            expect(list.previous).toBeDefined();
+            expect(list.previous?.items.length).toBe(CHUNK_SIZE);
+
+            const result = list.remove(10); // in previous chunk
+            expect(result.has(10)).toBe(false);
+            expect(result.has(36)).toBe(true);
+            expect(result.has(0)).toBe(true);
+            expect(result.isValid()).toBe(true);
+            expect(result.items).toBe(list.items); // Head chunk should be same instance
+            expect(result.previous).not.toBe(list.previous);
+        });
+
+        it("should return an empty list when the last item is removed", () => {
+            let list = new List<MyEntry>([], undefined);
+            list = list.insert(createItem(10));
+
+            const result = list.remove(10);
+            expect(result.isEmpty()).toBe(true);
+            expect(result.isValid()).toBe(true);
+        });
+
+        it("should handle removing an item that causes a chunk to become empty", () => {
+            let list = new List<MyEntry>([], undefined);
+            const item1 = createItem(10);
+            const item2 = createItem(5);
+            // Force them into separate chunks
+            list = new List([item1], new List([item2], undefined));
+
+            const result = list.remove(10);
+            expect(result.has(10)).toBe(false);
+            expect(result.has(5)).toBe(true);
+            expect(result.items.length).toBe(1);
+            expect(result.items[0].id).toBe(5);
+            expect(result.previous).toBeUndefined();
+            expect(result.isValid()).toBe(true);
+        });
+
+        it("should handle removing from the very first chunk when it only has one item", () => {
+            const item1 = createItem(10);
+            const item2 = createItem(5);
+            const list = new List([item1], new List([item2], undefined));
+
+            const result = list.remove(5);
+            expect(result.has(5)).toBe(false);
+            expect(result.has(10)).toBe(true);
+            expect(result.previous).toBeDefined();
+            expect(result.previous?.isEmpty()).toBe(true);
         });
     });
 
