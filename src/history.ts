@@ -1,5 +1,17 @@
 import type { List } from "./list";
 
+/**
+ * Read-only history of operations.
+ *
+ * It contains a linked list of operations with references to the previous one.
+ * Operation can be added to the history, but cannot be removed.
+ *
+ * Undo/redo operations are implemented by moving the `current` operation pointer.
+ *
+ * For one-click operations everything a straight forward. Continuous operations
+ * (resizing while mouse moving, for example) should be stored outside until the
+ * operation is finished ('mouseup' in case of resizing).
+ */
 export class History<Key extends string | number, Operation> {
     constructor(
         readonly items: List<History.Entry<Key, Operation>>,
@@ -65,6 +77,9 @@ export class History<Key extends string | number, Operation> {
         return this;
     }
 
+    /**
+     * Iterate over history. Undone operations are skipped.
+     */
     [Symbol.iterator](): Generator<History.Entry<Key, Operation>> {
         return this.items.iterate(this.current);
     }
@@ -81,6 +96,11 @@ export namespace History {
     export type Value<T extends Entry<string | number, unknown>> =
         T["operation"];
 
+    /**
+     * Generate a new key for the history.
+     * @param maxKey The biggest key in the history, or undefined if the history is empty.
+     * @returns A new key. It must be bigger than the provided one.
+     */
     export type KeyGenerator<Key extends string | number> = (
         maxKey: Key | undefined,
     ) => Key;
