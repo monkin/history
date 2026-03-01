@@ -96,6 +96,56 @@ describe("History", () => {
         });
     });
 
+    describe("all", () => {
+        it("should return all items in the history", () => {
+            let history = new History<number, string>(
+                new List([], undefined),
+                undefined,
+                generateId,
+            );
+
+            history = history.add("op1").add("op2").add("op3");
+            expect(history.current).toBe(3);
+
+            const all = Array.from(history.all());
+            expect(all).toEqual([
+                { id: 3, operation: "op3", previous: 2 },
+                { id: 2, operation: "op2", previous: 1 },
+                { id: 1, operation: "op1", previous: undefined },
+            ]);
+        });
+
+        it("should return all items even after undo", () => {
+            let history = new History<number, string>(
+                new List([], undefined),
+                undefined,
+                generateId,
+            );
+
+            history = history.add("op1").add("op2").add("op3");
+            history = history.undo();
+            expect(history.current).toBe(2);
+
+            const all = Array.from(history.all());
+            expect(all).toEqual([
+                { id: 3, operation: "op3", previous: 2 },
+                { id: 2, operation: "op2", previous: 1 },
+                { id: 1, operation: "op1", previous: undefined },
+            ]);
+        });
+
+        it("should return an empty array for an empty history", () => {
+            const history = new History<number, string>(
+                new List([], undefined),
+                undefined,
+                generateId,
+            );
+
+            const all = Array.from(history.all());
+            expect(all).toEqual([]);
+        });
+    });
+
     describe("undo and redo", () => {
         it("should handle basic undo and redo", () => {
             let history = new History<number, string>(
