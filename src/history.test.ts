@@ -181,4 +181,16 @@ describe("History", () => {
             ]);
         });
     });
+
+    describe("empty", () => {
+        it("should create an empty history", () => {
+            const history = History.empty<number, string>(generateId);
+
+            expect(history.current).toBeUndefined();
+            expect(history.canUndo).toBe(false);
+            expect(history.canRedo).toBe(false);
+            expect(Array.from(history)).toEqual([]);
+            expect(Array.from(history.all())).toEqual([]);
+        });
+    });
 });

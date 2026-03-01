@@ -1,4 +1,4 @@
-import type { List } from "./list";
+import { List } from "./list";
 
 /**
  * Read-only history of operations.
@@ -93,6 +93,12 @@ export class History<Key extends string | number, Operation> {
      */
     [Symbol.iterator](): Generator<History.Item<Key, Operation>> {
         return this.items.iterate(this.current);
+    }
+
+    static empty<Key extends string | number, Operation>(
+        generateId: History.KeyGenerator<Key>,
+    ): History<Key, Operation> {
+        return new History(new List([], undefined), undefined, generateId);
     }
 }
 
