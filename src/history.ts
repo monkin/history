@@ -9,10 +9,6 @@ export class History<Key extends string | number, Operation> {
          */
         readonly current: Key | undefined,
         /**
-         * Active operation key.
-         */
-        readonly active: Key | undefined,
-        /**
          * Function to generate a new unique key for an entry.
          * It receives the biggest Id in the history if any.
          * The generated key should be bigger than the provided one.
@@ -30,74 +26,16 @@ export class History<Key extends string | number, Operation> {
 
     /**
      * Add a new operation to the history.
-     * The same as `history.add(operation).commit()`.
      */
     add(operation: Operation): History<Key, Operation> {
-        const { items, current, active, generateId } = this;
-
-        // rollback if an active operation is in progress
-        if (active !== undefined) return this.rollback().add(operation);
-
-        const id = generateId(items.maxId);
-        return new History(
-            items.insert({ id, operation, previous: current }),
-            id,
-            undefined,
-            generateId,
-        );
-    }
-
-    /**
-     * Start a new active operation.
-     */
-    begin(operation: Operation): History<Key, Operation> {
         const { items, current, generateId } = this;
+
         const id = generateId(items.maxId);
         return new History(
             items.insert({ id, operation, previous: current }),
             id,
-            id,
             generateId,
         );
-    }
-
-    /**
-     * Replace the active operation.
-     *
-     * It works for continuous operations. Each time a new input is received,
-     * the previous operation should be replaced.
-     */
-    update(operation: Operation): History<Key, Operation> {
-        const { items, active, generateId } = this;
-        if (active === undefined) return this;
-
-        const previous = items.get(active)?.previous;
-        return new History(
-            items.insert({ id: active, operation: operation, previous }),
-            active,
-            active,
-            generateId,
-        );
-    }
-
-    /**
-     * Commit the active operation.
-     */
-    commit(): History<Key, Operation> {
-        if (this.active === undefined) return this;
-
-        return new History(this.items, this.active, undefined, this.generateId);
-    }
-
-    /**
-     * Remove the active operation.
-     */
-    rollback(): History<Key, Operation> {
-        const { items, active, generateId } = this;
-        if (active === undefined) return this;
-
-        const previous = items.get(active)?.previous;
-        return new History(items, previous, undefined, generateId);
     }
 
     undo(): History<Key, Operation> {
@@ -108,7 +46,6 @@ export class History<Key extends string | number, Operation> {
         return new History(
             items,
             current && items.get(current)?.previous,
-            undefined,
             generateId,
         );
     }
@@ -121,7 +58,7 @@ export class History<Key extends string | number, Operation> {
 
         for (const item of items.iterate(maxId)) {
             if (item.previous === current) {
-                return new History(items, item.id, undefined, generateId);
+                return new History(items, item.id, generateId);
             }
         }
 
