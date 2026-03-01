@@ -223,4 +223,51 @@ describe("History", () => {
             expect(Array.from(history)).toEqual([updatedItem]);
         });
     });
+
+    describe("fromItems", () => {
+        it("should create history from items and current pointer", () => {
+            const item1 = { id: 1, operation: "op1", previous: undefined };
+            const item2 = { id: 2, operation: "op2", previous: 1 };
+            const item3 = { id: 3, operation: "op3", previous: 2 };
+            const items = [item1, item2, item3];
+
+            const history = History.fromItems<number, string>(
+                2,
+                items,
+                generateId,
+            );
+
+            expect(history.current).toBe(2);
+            expect(Array.from(history)).toEqual([item2, item1]);
+            expect(Array.from(history.all())).toEqual([item3, item2, item1]);
+        });
+
+        it("should handle empty items", () => {
+            const history = History.fromItems<number, string>(
+                undefined,
+                [],
+                generateId,
+            );
+
+            expect(history.current).toBeUndefined();
+            expect(Array.from(history)).toEqual([]);
+            expect(Array.from(history.all())).toEqual([]);
+        });
+
+        it("should handle out-of-order items", () => {
+            const item1 = { id: 1, operation: "op1", previous: undefined };
+            const item2 = { id: 2, operation: "op2", previous: 1 };
+            const item3 = { id: 3, operation: "op3", previous: 2 };
+            const items = [item3, item1, item2]; // out of order
+
+            const history = History.fromItems<number, string>(
+                3,
+                items,
+                generateId,
+            );
+
+            expect(history.current).toBe(3);
+            expect(Array.from(history.all())).toEqual([item3, item2, item1]);
+        });
+    });
 });

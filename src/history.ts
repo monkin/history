@@ -113,6 +113,20 @@ export class History<Key extends string | number, Operation> {
     ): History<Key, Operation> {
         return new History(new List([], undefined), undefined, generateId);
     }
+
+    static fromItems<Key extends string | number, Operation>(
+        current: Key | undefined,
+        items: History.Item<Key, Operation>[],
+        generateId: History.KeyGenerator<Key>,
+    ): History<Key, Operation> {
+        return new History(
+            new List<History.Item<Key, Operation>>([], undefined).insertAll(
+                items,
+            ),
+            current,
+            generateId,
+        );
+    }
 }
 
 export namespace History {
