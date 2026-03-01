@@ -77,10 +77,14 @@ export class History<Key extends string | number, Operation> {
         return this;
     }
 
+    *all(): Generator<History.Item<Key, Operation>> {
+        return yield* this.items;
+    }
+
     /**
      * Iterate over history. Undone operations are skipped.
      *
-     * To iterate over all operations, use `for (const item of history.items) { ... }` instead.
+     * To iterate over all operations, use `for (const item of history.all()) { ... }` instead.
      */
     [Symbol.iterator](): Generator<History.Item<Key, Operation>> {
         return this.items.iterate(this.current);

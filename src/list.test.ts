@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { History } from "./history.ts";
 import { CHUNK_SIZE, List } from "./list.ts";
 
-interface MyEntry extends History.Entry<number, string> {
+interface MyEntry extends History.Item<number, string> {
     id: number;
     previous: number | undefined;
     operation: string;
