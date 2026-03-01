@@ -14,7 +14,7 @@ import type { List } from "./list";
  */
 export class History<Key extends string | number, Operation> {
     constructor(
-        readonly items: List<History.Entry<Key, Operation>>,
+        readonly items: List<History.Item<Key, Operation>>,
         /**
          * Pointer to the current entry in the history.
          * It can be moved by undo/redo operations.
@@ -79,21 +79,23 @@ export class History<Key extends string | number, Operation> {
 
     /**
      * Iterate over history. Undone operations are skipped.
+     *
+     * To iterate over all operations, use `for (const item of history.items) { ... }` instead.
      */
-    [Symbol.iterator](): Generator<History.Entry<Key, Operation>> {
+    [Symbol.iterator](): Generator<History.Item<Key, Operation>> {
         return this.items.iterate(this.current);
     }
 }
 
 export namespace History {
-    export interface Entry<Id extends string | number, Operation> {
+    export interface Item<Id extends string | number, Operation> {
         readonly id: Id;
         readonly previous: Id | undefined;
         readonly operation: Operation;
     }
 
-    export type Key<T extends Entry<string | number, unknown>> = T["id"];
-    export type Value<T extends Entry<string | number, unknown>> =
+    export type Key<T extends Item<string | number, unknown>> = T["id"];
+    export type Value<T extends Item<string | number, unknown>> =
         T["operation"];
 
     /**
