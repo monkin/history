@@ -31,6 +31,22 @@ export class History<Key extends string | number, Operation> {
     ) {}
 
     /**
+     * Calculates the age position of an element identified by the given id within a collection.
+     * The method iterates through the collection, compares ids, and determines the position if found.
+     * `undefined` means that the id is not present in the collection or was undone.
+     */
+    ageOf(id: Key): number | undefined {
+        let age = 0;
+        for (const i of this) {
+            if (i.id < id) return undefined;
+            if (i.id === id) return age;
+            age++;
+        }
+
+        return undefined;
+    }
+
+    /**
      * Upload a list of items to the history.
      * This operation should be used for partial history loading.
      * It won't change `current`, since it uploads older item.
