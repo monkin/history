@@ -13,7 +13,9 @@ import type { List } from "./list";
  * operation is finished ('mouseup' in case of resizing).
  */
 export class History<Key extends string | number, Operation> {
+    /** @internal */
     constructor(
+        /** @internal */
         readonly items: List<History.Item<Key, Operation>>,
         /**
          * Pointer to the current entry in the history.
@@ -77,6 +79,9 @@ export class History<Key extends string | number, Operation> {
         return this;
     }
 
+    /**
+     * Retrieves a generator that yields all (undone too) items in the history.
+     */
     *all(): Generator<History.Item<Key, Operation>> {
         return yield* this.items;
     }
