@@ -193,4 +193,34 @@ describe("History", () => {
             expect(Array.from(history.all())).toEqual([]);
         });
     });
+
+    describe("upload", () => {
+        it("should upload missing older items", () => {
+            let history = History.empty<number, string>(generateId);
+            const item1 = { id: 1, operation: "op1", previous: undefined };
+            const item2 = { id: 2, operation: "op2", previous: 1 };
+            const item3 = { id: 3, operation: "op3", previous: 2 };
+
+            history = history.upload([item3]);
+            expect(history.current).toBeUndefined();
+
+            history = history.upload([item1, item2]);
+            expect(Array.from(history.all())).toEqual([item3, item2, item1]);
+        });
+
+        it("should allow replacing existing items including current", () => {
+            let history = History.empty<number, string>(generateId);
+            history = history.add("op1"); // ID 1, current 1
+
+            const updatedItem = {
+                id: 1,
+                operation: "updated op1",
+                previous: undefined,
+            };
+            history = history.upload([updatedItem]);
+
+            expect(history.current).toBe(1);
+            expect(Array.from(history)).toEqual([updatedItem]);
+        });
+    });
 });

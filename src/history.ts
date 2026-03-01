@@ -30,6 +30,19 @@ export class History<Key extends string | number, Operation> {
         readonly generateId: History.KeyGenerator<Key>,
     ) {}
 
+    /**
+     * Upload a list of items to the history.
+     * This operation should be used for partial history loading.
+     * It won't change `current`, since it uploads older item.
+     */
+    upload(items: History.Item<Key, Operation>[]): History<Key, Operation> {
+        return new History(
+            this.items.insertAll(items),
+            this.current,
+            this.generateId,
+        );
+    }
+
     get canUndo(): boolean {
         return this.current !== undefined;
     }
