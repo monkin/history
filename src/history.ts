@@ -2,25 +2,25 @@ import type { Entry, KeyGenerator } from "./entry";
 import { List } from "./list";
 
 /**
- * Read-only history of operations.
+ * Read-only history of values.
  *
- * It contains a linked list of operations with references to the previous one.
- * Operation can be added to the history, but cannot be removed.
+ * It contains a linked list of values with references to the previous one.
+ * Value can be added to the history, but cannot be removed.
  *
- * Undo/redo operations are implemented by moving the `current` operation pointer.
+ * Undo/redo are implemented by moving the `current` value pointer.
  *
- * For one-click operations everything a straight forward. Continuous operations
+ * For one-click actions everything a straight forward. Continuous actions
  * (resizing while mouse moving, for example) should be stored outside until the
- * operation is finished ('mouseup' in case of resizing).
+ * value is finished ('mouseup' in case of resizing).
  */
-export class History<Key extends string | number, Operation> {
+export class History<Key extends string | number, Value> {
     /** @internal */
     constructor(
         /** @internal */
-        readonly items: List<Entry<Key, Operation>>,
+        readonly items: List<Entry<Key, Value>>,
         /**
          * Pointer to the current entry in the history.
-         * It can be moved by undo/redo operations.
+         * It can be moved by undo/redo.
          */
         readonly current: Key | undefined,
         /**
@@ -49,10 +49,10 @@ export class History<Key extends string | number, Operation> {
 
     /**
      * Upload a list of items to the history.
-     * This operation should be used for partial history loading.
+     * This value should be used for partial history loading.
      * It won't change `current`, since it uploads older item.
      */
-    upload(items: Entry<Key, Operation>[]): History<Key, Operation> {
+    upload(items: Entry<Key, Value>[]): History<Key, Value> {
         return new History(
             this.items.insertAll(items),
             this.current,
@@ -69,20 +69,20 @@ export class History<Key extends string | number, Operation> {
     }
 
     /**
-     * Add a new operation to the history.
+     * Add a new value to the history.
      */
-    add(operation: Operation): History<Key, Operation> {
+    add(value: Value): History<Key, Value> {
         const { items, current, generateId } = this;
 
         const id = generateId(items.maxId);
         return new History(
-            items.insert({ id, operation, previous: current }),
+            items.insert({ id, value, previous: current }),
             id,
             generateId,
         );
     }
 
-    undo(): History<Key, Operation> {
+    undo(): History<Key, Value> {
         const { items, current, generateId } = this;
 
         if (current === undefined) return this;
@@ -94,7 +94,7 @@ export class History<Key extends string | number, Operation> {
         );
     }
 
-    redo(): History<Key, Operation> {
+    redo(): History<Key, Value> {
         const { items, current, generateId } = this;
         const { maxId } = items;
 
@@ -112,32 +112,32 @@ export class History<Key extends string | number, Operation> {
     /**
      * Retrieves a generator that yields all (undone too) items in the history.
      */
-    *all(): Generator<Entry<Key, Operation>> {
+    *all(): Generator<Entry<Key, Value>> {
         return yield* this.items;
     }
 
     /**
-     * Iterate over history. Undone operations are skipped.
+     * Iterate over history. Undone values are skipped.
      *
-     * To iterate over all operations, use `for (const item of history.all()) { ... }` instead.
+     * To iterate over all values, use `for (const item of history.all()) { ... }` instead.
      */
-    [Symbol.iterator](): Generator<Entry<Key, Operation>> {
+    [Symbol.iterator](): Generator<Entry<Key, Value>> {
         return this.items.iterate(this.current);
     }
 
-    static empty<Key extends string | number, Operation>(
+    static empty<Key extends string | number, Value>(
         generateId: KeyGenerator<Key>,
-    ): History<Key, Operation> {
+    ): History<Key, Value> {
         return new History(new List([], undefined), undefined, generateId);
     }
 
-    static fromItems<Key extends string | number, Operation>(
+    static fromItems<Key extends string | number, Value>(
         current: Key | undefined,
-        items: Entry<Key, Operation>[],
+        items: Entry<Key, Value>[],
         generateId: KeyGenerator<Key>,
-    ): History<Key, Operation> {
+    ): History<Key, Value> {
         return new History(
-            new List<Entry<Key, Operation>>([], undefined).insertAll(items),
+            new List<Entry<Key, Value>>([], undefined).insertAll(items),
             current,
             generateId,
         );

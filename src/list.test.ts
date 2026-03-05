@@ -5,7 +5,7 @@ import { CHUNK_SIZE, List } from "./list.ts";
 interface MyEntry extends Entry<number, string> {
     id: number;
     previous: number | undefined;
-    operation: string;
+    value: string;
 }
 
 function createItem(
@@ -13,7 +13,7 @@ function createItem(
     previous?: number,
     value: string = "test",
 ): MyEntry {
-    return { id, previous, operation: value };
+    return { id, previous, value: value };
 }
 
 describe("List", () => {

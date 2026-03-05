@@ -3,10 +3,10 @@
  *
  * Each entry has a unique key and a reference to the previous one.
  */
-export interface Entry<Id extends string | number, Operation> {
+export interface Entry<Id extends string | number, Value> {
     readonly id: Id;
     readonly previous: Id | undefined;
-    readonly operation: Operation;
+    readonly value: Value;
 }
 
 /**
@@ -17,8 +17,7 @@ export type Key<T extends Entry<string | number, unknown>> = T["id"];
 /**
  * Get the value type of the entry.
  */
-export type Value<T extends Entry<string | number, unknown>> =
-    T["operation"];
+export type Value<T extends Entry<string | number, unknown>> = T["value"];
 
 /**
  * Generate a new key for the history.
