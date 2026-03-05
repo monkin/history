@@ -30,12 +30,14 @@ export class AgeCache<Key extends string | number> {
             this.lastAge++;
             this.minId = itemId;
 
-            this.cache.set(key, age);
-
-            if (this.minId < key) return undefined;
+            this.cache.set(itemId, age);
 
             if (itemId === key) {
                 return age;
+            }
+
+            if (itemId < key) {
+                return undefined;
             }
         }
 
