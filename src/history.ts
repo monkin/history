@@ -13,11 +13,11 @@ import { List } from "./list";
  * (resizing while mouse moving, for example) should be stored outside until the
  * value is finished ('mouseup' in case of resizing).
  */
-export class History<Key extends string | number, Value> {
+export class History<Key extends string | number, Operation> {
     /** @internal */
     constructor(
         /** @internal */
-        readonly items: List<Entry<Key, Value>>,
+        readonly items: List<Entry<Key, Operation>>,
         /**
          * Pointer to the current entry in the history.
          * It can be moved by undo/redo.
@@ -52,7 +52,7 @@ export class History<Key extends string | number, Value> {
      * This value should be used for partial history loading.
      * It won't change `current`, since it uploads older item.
      */
-    upload(items: Entry<Key, Value>[]): History<Key, Value> {
+    upload(items: Entry<Key, Operation>[]): History<Key, Operation> {
         return new History(
             this.items.insertAll(items),
             this.current,
@@ -71,7 +71,7 @@ export class History<Key extends string | number, Value> {
     /**
      * Add a new value to the history.
      */
-    add(value: Value): History<Key, Value> {
+    add(value: Operation): History<Key, Operation> {
         const { items, current, generateId } = this;
 
         const id = generateId(items.maxId);
@@ -82,7 +82,7 @@ export class History<Key extends string | number, Value> {
         );
     }
 
-    undo(): History<Key, Value> {
+    undo(): History<Key, Operation> {
         const { items, current, generateId } = this;
 
         if (current === undefined) return this;
@@ -94,7 +94,7 @@ export class History<Key extends string | number, Value> {
         );
     }
 
-    redo(): History<Key, Value> {
+    redo(): History<Key, Operation> {
         const { items, current, generateId } = this;
         const { maxId } = items;
 
@@ -112,7 +112,7 @@ export class History<Key extends string | number, Value> {
     /**
      * Retrieves a generator that yields all (undone too) items in the history.
      */
-    *all(): Generator<Entry<Key, Value>> {
+    *all(): Generator<Entry<Key, Operation>> {
         return yield* this.items;
     }
 
@@ -121,7 +121,7 @@ export class History<Key extends string | number, Value> {
      *
      * To iterate over all values, use `for (const item of history.all()) { ... }` instead.
      */
-    [Symbol.iterator](): Generator<Entry<Key, Value>> {
+    [Symbol.iterator](): Generator<Entry<Key, Operation>> {
         return this.items.iterate(this.current);
     }
 
