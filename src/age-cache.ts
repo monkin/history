@@ -1,6 +1,9 @@
 import type { Entry } from "./entry.ts";
 import type { History } from "./history.ts";
 
+/**
+ * @internal
+ */
 export class AgeCache<Key extends string | number> {
     // last key received from iterator
     private minId: Key | undefined = undefined;

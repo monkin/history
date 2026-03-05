@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { History } from "./history.ts";
 import type { KeyGenerator } from "./entry";
+import { History } from "./history.ts";
 
 describe("History.ageOf reproduction", () => {
     const generateId: KeyGenerator<number> = (maxId) =>
@@ -27,7 +27,7 @@ describe("History.ageOf reproduction", () => {
     it("should handle undo and redo correctly for ageOf", () => {
         let history = History.empty<number, string>(generateId);
         history = history.add("op1").add("op2").add("op3");
-        
+
         history = history.undo();
         // current is 2. op3 is undone.
         // iteration: 2, 1
@@ -59,7 +59,7 @@ describe("History.ageOf reproduction", () => {
     it("should handle history with branches (after undo and add)", () => {
         let history = History.empty<number, string>(generateId);
         history = history.add("op1").add("op2").add("op3");
-        
+
         history = history.undo().undo(); // current is 1
         expect(history.ageOf(1)).toBe(0);
         expect(history.ageOf(2)).toBeUndefined();
@@ -71,7 +71,7 @@ describe("History.ageOf reproduction", () => {
         expect(history.ageOf(1)).toBe(1);
         expect(history.ageOf(2)).toBeUndefined();
         expect(history.ageOf(3)).toBeUndefined();
-        
+
         history = history.undo(); // current is 1 again
         expect(history.ageOf(1)).toBe(0);
         expect(history.ageOf(4)).toBeUndefined();
@@ -98,7 +98,7 @@ describe("History.ageOf reproduction", () => {
         history = history.undo().undo().undo(); // current is 1
         expect(history.ageOf(1)).toBe(0);
         expect(history.ageOf(2)).toBeUndefined();
-        
+
         history = history.redo().redo(); // current is 3
         expect(history.ageOf(3)).toBe(0);
         expect(history.ageOf(2)).toBe(1);

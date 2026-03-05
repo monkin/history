@@ -6,11 +6,11 @@ import { List } from "./list";
  * Read-only history of values.
  *
  * It contains a linked list of values with references to the previous one.
- * Value can be added to the history, but cannot be removed.
+ * Value can be added to the history but cannot be removed.
  *
  * Undo/redo are implemented by moving the `current` value pointer.
  *
- * For one-click actions everything a straight forward. Continuous actions
+ * For one-click actions everything is straight forward. Continuous actions
  * (resizing while mouse moving, for example) should be stored outside until the
  * value is finished ('mouseup' in case of resizing).
  */
