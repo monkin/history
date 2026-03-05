@@ -16,7 +16,7 @@ export class History<Key extends string | number, Operation> {
     /** @internal */
     constructor(
         /** @internal */
-        readonly items: List<History.Item<Key, Operation>>,
+        readonly items: List<History.Entry<Key, Operation>>,
         /**
          * Pointer to the current entry in the history.
          * It can be moved by undo/redo operations.
@@ -51,7 +51,7 @@ export class History<Key extends string | number, Operation> {
      * This operation should be used for partial history loading.
      * It won't change `current`, since it uploads older item.
      */
-    upload(items: History.Item<Key, Operation>[]): History<Key, Operation> {
+    upload(items: History.Entry<Key, Operation>[]): History<Key, Operation> {
         return new History(
             this.items.insertAll(items),
             this.current,
@@ -111,7 +111,7 @@ export class History<Key extends string | number, Operation> {
     /**
      * Retrieves a generator that yields all (undone too) items in the history.
      */
-    *all(): Generator<History.Item<Key, Operation>> {
+    *all(): Generator<History.Entry<Key, Operation>> {
         return yield* this.items;
     }
 
@@ -120,7 +120,7 @@ export class History<Key extends string | number, Operation> {
      *
      * To iterate over all operations, use `for (const item of history.all()) { ... }` instead.
      */
-    [Symbol.iterator](): Generator<History.Item<Key, Operation>> {
+    [Symbol.iterator](): Generator<History.Entry<Key, Operation>> {
         return this.items.iterate(this.current);
     }
 
@@ -132,11 +132,11 @@ export class History<Key extends string | number, Operation> {
 
     static fromItems<Key extends string | number, Operation>(
         current: Key | undefined,
-        items: History.Item<Key, Operation>[],
+        items: History.Entry<Key, Operation>[],
         generateId: History.KeyGenerator<Key>,
     ): History<Key, Operation> {
         return new History(
-            new List<History.Item<Key, Operation>>([], undefined).insertAll(
+            new List<History.Entry<Key, Operation>>([], undefined).insertAll(
                 items,
             ),
             current,
@@ -146,14 +146,14 @@ export class History<Key extends string | number, Operation> {
 }
 
 export namespace History {
-    export interface Item<Id extends string | number, Operation> {
+    export interface Entry<Id extends string | number, Operation> {
         readonly id: Id;
         readonly previous: Id | undefined;
         readonly operation: Operation;
     }
 
-    export type Key<T extends Item<string | number, unknown>> = T["id"];
-    export type Value<T extends Item<string | number, unknown>> =
+    export type Key<T extends Entry<string | number, unknown>> = T["id"];
+    export type Value<T extends Entry<string | number, unknown>> =
         T["operation"];
 
     /**

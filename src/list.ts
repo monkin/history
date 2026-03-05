@@ -4,7 +4,7 @@ import type { History } from "./history";
 export const CHUNK_SIZE = 32;
 
 /** @internal */
-export class List<T extends History.Item<string | number, unknown>> {
+export class List<T extends History.Entry<string | number, unknown>> {
     /**
      * Items sorted by id. Items should not contain more than CHUNK_SIZE elements.
      * @internal
