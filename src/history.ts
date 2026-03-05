@@ -1,3 +1,4 @@
+import { AgeCache } from "./age-cache.ts";
 import type { Entry, KeyGenerator } from "./entry";
 import { List } from "./list";
 
@@ -37,14 +38,7 @@ export class History<Key extends string | number, Operation> {
      * `undefined` means that the id is not present in the collection or was undone.
      */
     ageOf(id: Key): number | undefined {
-        let age = 0;
-        for (const i of this) {
-            if (i.id < id) return undefined;
-            if (i.id === id) return age;
-            age++;
-        }
-
-        return undefined;
+        return AgeCache.get(this).get(id);
     }
 
     /**

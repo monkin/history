@@ -45,7 +45,7 @@ export class AgeCache<Key extends string | number> {
 
     static cache = new WeakMap<History<any, unknown>, AgeCache<any>>();
 
-    static create<K extends string | number>(history: History<K, unknown>) {
+    static get<K extends string | number>(history: History<K, unknown>) {
         const cached = AgeCache.cache.get(history);
         if (cached !== undefined) return cached;
 
