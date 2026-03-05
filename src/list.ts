@@ -1,10 +1,10 @@
-import type { History } from "./history";
+import type { Entry, Key } from "./entry";
 
 /** @internal */
 export const CHUNK_SIZE = 32;
 
 /** @internal */
-export class List<T extends History.Entry<string | number, unknown>> {
+export class List<T extends Entry<string | number, unknown>> {
     /**
      * Items sorted by id. Items should not contain more than CHUNK_SIZE elements.
      * @internal
@@ -23,7 +23,7 @@ export class List<T extends History.Entry<string | number, unknown>> {
     /**
      * The latest id in the list.
      */
-    get maxId(): History.Key<T> | undefined {
+    get maxId(): Key<T> | undefined {
         const { items, previous } = this;
         if (items.length) return items[0].id;
         return previous?.maxId;
@@ -38,7 +38,7 @@ export class List<T extends History.Entry<string | number, unknown>> {
         return items.length !== 0 || (previous?.isNotEmpty() ?? false);
     }
 
-    has(id: History.Key<T>): boolean {
+    has(id: Key<T>): boolean {
         const { maxId, items, previous } = this;
         const l = items.length;
         if (maxId && id > maxId) return false;
@@ -46,7 +46,7 @@ export class List<T extends History.Entry<string | number, unknown>> {
         return items.some((i) => i.id === id);
     }
 
-    get(id: History.Key<T>): T | undefined {
+    get(id: Key<T>): T | undefined {
         const { maxId, items, previous } = this;
         const l = items.length;
 
@@ -155,7 +155,7 @@ export class List<T extends History.Entry<string | number, unknown>> {
         const inside: T[] = [];
         const larger: T[] = [];
 
-        const insideIds = new Set<History.Key<T>>();
+        const insideIds = new Set<Key<T>>();
 
         values.forEach((value) => {
             if (value.id < minId) {
@@ -206,7 +206,7 @@ export class List<T extends History.Entry<string | number, unknown>> {
      * Iterate over items starting from the given id.
      * This iteration method skips unreferenced items, it follows the chain of `previous` field references.
      */
-    *iterate(startFrom: History.Key<T> | undefined): Generator<T> {
+    *iterate(startFrom: Key<T> | undefined): Generator<T> {
         // looks like the history is empty, or we made as many undo steps as possible
         if (startFrom === undefined) return;
 
@@ -246,7 +246,7 @@ export class List<T extends History.Entry<string | number, unknown>> {
      */
     isValid(): boolean {
         let previous: T | undefined;
-        const ids = new Set<History.Key<T>>();
+        const ids = new Set<Key<T>>();
         for (const item of this) {
             // ids are sorted
             if (previous && previous.id <= item.id) return false;

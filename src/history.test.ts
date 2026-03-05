@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
+import type { Entry, KeyGenerator } from "./entry";
 import { History } from "./history.ts";
 import { List } from "./list.ts";
 
-interface MyEntry extends History.Entry<number, string> {
+interface MyEntry extends Entry<number, string> {
     id: number;
     previous: number | undefined;
     operation: string;
@@ -25,7 +26,7 @@ describe("History", () => {
         let list = new List<MyEntry>([], undefined);
         list = list.insert(item1).insert(item2).insert(item3);
 
-        const generateId: History.KeyGenerator<number> = (maxId) =>
+        const generateId: KeyGenerator<number> = (maxId) =>
             ((maxId as number) ?? 0) + 1;
 
         const history = new History<number, string>(list, 2, generateId);
@@ -43,7 +44,7 @@ describe("History", () => {
         let list = new List<MyEntry>([], undefined);
         list = list.insert(item1).insert(item2).insert(item3);
 
-        const generateId: History.KeyGenerator<number> = (maxId) =>
+        const generateId: KeyGenerator<number> = (maxId) =>
             ((maxId as number) ?? 0) + 1;
 
         const history = new History<number, string>(list, 3, generateId);
@@ -57,7 +58,7 @@ describe("History", () => {
         let list = new List<MyEntry>([], undefined);
         list = list.insert(item1);
 
-        const generateId: History.KeyGenerator<number> = (maxId) =>
+        const generateId: KeyGenerator<number> = (maxId) =>
             ((maxId as number) ?? 0) + 1;
 
         const history = new History<number, string>(
@@ -70,7 +71,7 @@ describe("History", () => {
         expect(iterated).toEqual([]);
     });
 
-    const generateId: History.KeyGenerator<number> = (maxId) =>
+    const generateId: KeyGenerator<number> = (maxId) =>
         ((maxId as number) ?? 0) + 1;
 
     describe("add", () => {
