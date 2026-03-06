@@ -132,3 +132,123 @@ export const insert = <T>(
 
     return create([...items.slice(0, low), item, ...items.slice(low)], next);
 };
+
+const insertAllSorted = <T>(
+    list: SortedList<T>,
+    values: T[],
+    compare: CompareFunction<T>,
+): SortedList<T> => {
+    if (values.length === 0) return list;
+    if (values.length === 1) return insert(list, values[0], compare);
+
+    const { items, next } = list;
+    const l = items.length;
+
+    if (l === 0) {
+        return next ? insertAllSorted(next, values, compare) : create(values);
+    }
+
+    const first = items[0];
+    const last = items[l - 1];
+
+    if (compare(values[values.length - 1], first) === CompareResult.Less) {
+        return create(values, list);
+    }
+
+    if (compare(values[0], last) === CompareResult.Greater) {
+        if (next) {
+            const updated = insertAllSorted(next, values, compare);
+            return updated === next ? list : create(items, updated);
+        } else {
+            return create([...items, ...values]);
+        }
+    }
+
+    const smaller: T[] = [];
+    const inside: T[] = [];
+    const larger: T[] = [];
+
+    for (const value of values) {
+        if (compare(value, first) === CompareResult.Less) {
+            smaller.push(value);
+        } else if (compare(value, last) === CompareResult.Greater) {
+            larger.push(value);
+        } else {
+            inside.push(value);
+        }
+    }
+
+    if (inside.length === 0) {
+        return insertAllSorted(
+            insertAllSorted(list, smaller, compare),
+            larger,
+            compare,
+        );
+    }
+
+    const newItems: T[] = [];
+    let i = 0;
+    let j = 0;
+    while (i < items.length || j < inside.length) {
+        if (i < items.length && j < inside.length) {
+            const cmp = compare(inside[j], items[i]);
+            if (cmp === CompareResult.Less) {
+                newItems.push(inside[j]);
+                j++;
+            } else if (cmp === CompareResult.Equal) {
+                newItems.push(inside[j]);
+                i++;
+                j++;
+            } else {
+                newItems.push(items[i]);
+                i++;
+            }
+        } else if (i < items.length) {
+            newItems.push(items[i]);
+            i++;
+        } else {
+            newItems.push(inside[j]);
+            j++;
+        }
+    }
+
+    if (
+        newItems.length === items.length &&
+        newItems.every((v, idx) => items[idx] === v)
+    ) {
+        return insertAllSorted(
+            insertAllSorted(list, smaller, compare),
+            larger,
+            compare,
+        );
+    }
+
+    return insertAllSorted(
+        insertAllSorted(create(newItems, next), smaller, compare),
+        larger,
+        compare,
+    );
+};
+
+export const insertAll = <T>(
+    list: SortedList<T>,
+    values: T[],
+    compare: CompareFunction<T>,
+): SortedList<T> => {
+    if (values.length === 0) return list;
+
+    const sorted = [...values].sort(compare);
+    const uniqueSorted: T[] = [];
+    for (const val of sorted) {
+        if (
+            uniqueSorted.length > 0 &&
+            compare(val, uniqueSorted[uniqueSorted.length - 1]) ===
+                CompareResult.Equal
+        ) {
+            uniqueSorted[uniqueSorted.length - 1] = val;
+        } else {
+            uniqueSorted.push(val);
+        }
+    }
+    return insertAllSorted(list, uniqueSorted, compare);
+};
