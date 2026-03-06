@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { CompareResult, emptyList, insert } from "./sorted-list";
+import {
+    CompareResult,
+    emptyList,
+    insert,
+    type SortedList,
+} from "./sorted-list";
 
 describe("SortedList", () => {
     const compare = (a: number, b: number) => {
@@ -9,7 +14,7 @@ describe("SortedList", () => {
     };
 
     it("should insert between first and last", () => {
-        let list = insert(emptyList as any, 10, compare);
+        let list: SortedList<number> = insert(emptyList, 10, compare);
         list = insert(list, 20, compare);
         list = insert(list, 15, compare);
         expect(list.items).toEqual([10, 15, 20]);
@@ -38,7 +43,7 @@ describe("SortedList", () => {
     });
 
     it("should not change list if item is exactly equal (===) to existing item", () => {
-        let list = insert(emptyList as any, 10, compare);
+        let list: SortedList<number> = insert(emptyList as any, 10, compare);
         list = insert(list, 20, compare);
         list = insert(list, 15, compare);
 

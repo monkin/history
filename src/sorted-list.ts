@@ -10,7 +10,7 @@ export const enum CompareResult {
     Greater = 1,
 }
 
-type CompareFunction<T> = (a: T, b: T) => CompareResult;
+export type CompareFunction<T> = (a: T, b: T) => CompareResult;
 
 /**
  * Immutable sorted list.
@@ -19,7 +19,7 @@ type CompareFunction<T> = (a: T, b: T) => CompareResult;
  * It's expected that the function is not changed across the calls to the same list.
  * If two items are equal, the latest one will replace the older one.
  */
-interface SortedList<T> {
+export interface SortedList<T> {
     /**
      * Sorted values of this chunk
      */
