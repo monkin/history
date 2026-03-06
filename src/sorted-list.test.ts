@@ -6,6 +6,7 @@ import {
     getItem,
     insert,
     insertAll,
+    iterate,
     type LookupFunction,
     type SortedList,
     toArray,
@@ -83,6 +84,26 @@ describe("SortedList", () => {
             }
             previous = item;
         });
+    });
+
+    it("should iterate over items", () => {
+        const items = [10, 20, 30, 40, 50];
+        const list = insertAll(emptyList, items, compare);
+        const iterated = [];
+        for (const item of iterate(list)) {
+            iterated.push(item);
+        }
+        expect(iterated).toEqual(items);
+    });
+
+    it("should iterate over multi-chunk items", () => {
+        const items = [];
+        for (let i = 0; i < 100; i++) {
+            items.push(i);
+        }
+        const list = insertAll(emptyList, items, compare);
+        const iterated = Array.from(iterate(list));
+        expect(iterated).toEqual(items);
     });
 
     describe("insertAll", () => {

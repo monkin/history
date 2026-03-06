@@ -63,6 +63,14 @@ export const each = <T>(
     }
 };
 
+export function* iterate<T>(list: SortedList<T>): IterableIterator<T> {
+    let current: SortedList<T> | undefined = list;
+    while (current) {
+        yield* current.items;
+        current = current.next;
+    }
+}
+
 export const toArray = <T>(list: SortedList<T>): T[] => {
     const result: T[] = [];
     each(list, (item) => result.push(item));
@@ -306,9 +314,7 @@ export const getItem = <T>(
     return undefined;
 };
 
-export function hasItem<T>(
+export const hasItem = <T>(
     list: SortedList<T>,
     lookup: LookupFunction<T>,
-): boolean {
-    return getItem(list, lookup) !== undefined;
-}
+): boolean => getItem(list, lookup) !== undefined;
