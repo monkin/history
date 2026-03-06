@@ -262,14 +262,15 @@ export const getItem = <T>(
     list: SortedList<T>,
     lookup: LookupFunction<T>,
 ): T | undefined => {
-    let current: SortedList<T> | undefined = list;
-    while (current) {
+    for (
+        let current: SortedList<T> | undefined = list;
+        current;
+        current = current.next
+    ) {
         const { items } = current;
-        const next: SortedList<T> | undefined = current.next;
 
         const l = items.length;
         if (l === 0) {
-            current = next;
             continue;
         }
 
@@ -282,7 +283,6 @@ export const getItem = <T>(
         const cmpLast = lookup(last);
         if (cmpLast === CompareResult.Equal) return last;
         if (cmpLast === CompareResult.Greater) {
-            current = next;
             continue;
         }
 
@@ -294,11 +294,21 @@ export const getItem = <T>(
             const item = items[mid];
             const cmp = lookup(item);
             if (cmp === CompareResult.Equal) return item;
-            if (cmp === CompareResult.Greater) low = mid + 1;
-            else high = mid - 1;
+            if (cmp === CompareResult.Greater) {
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
         }
 
         return undefined;
     }
     return undefined;
 };
+
+export function hasItem<T>(
+    list: SortedList<T>,
+    lookup: LookupFunction<T>,
+): boolean {
+    return getItem(list, lookup) !== undefined;
+}
