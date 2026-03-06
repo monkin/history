@@ -108,6 +108,42 @@ describe("SortedList", () => {
         expect(iterated).toEqual(items);
     });
 
+    describe("each", () => {
+        it("should provide correct indexes for a single chunk", () => {
+            const items = [10, 20, 30];
+            const list = insertAll(emptyList, items, compare);
+            const indexes: number[] = [];
+            each(list, (_item, i) => {
+                indexes.push(i);
+            });
+            expect(indexes).toEqual([0, 1, 2]);
+        });
+
+        it("should provide correct indexes for multi-chunk list", () => {
+            const items = [];
+            for (let i = 0; i < 100; i++) {
+                items.push(i);
+            }
+            const list = insertAll(emptyList, items, compare);
+            const resultItems: number[] = [];
+            const resultIndexes: number[] = [];
+            each(list, (item, i) => {
+                resultItems.push(item);
+                resultIndexes.push(i);
+            });
+            expect(resultItems).toEqual(items);
+            expect(resultIndexes).toEqual(items.map((_, i) => i));
+        });
+
+        it("should not call callback for empty list", () => {
+            let called = false;
+            each(emptyList, () => {
+                called = true;
+            });
+            expect(called).toBe(false);
+        });
+    });
+
     describe("insertAll", () => {
         const compare = (a: number, b: number) => {
             if (a < b) return CompareResult.Less;
