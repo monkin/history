@@ -19,6 +19,8 @@ export type LookupFunction<T> = (value: T) => CompareResult;
  * Sort function must be provided for every update call.
  * It's expected that the function is not changed across the calls to the same list.
  * If two items are equal, the latest one will replace the older one.
+ *
+ * It's implemented as an interface and set of functions to make it smaller after minification.
  */
 export interface SortedList<T> {
     /**
@@ -52,14 +54,21 @@ const split = <T>(list: SortedList<T>): SortedList<T> => {
 };
 
 export const each = <T>(
-    { items, next }: SortedList<T>,
-    callback: (item: T) => void,
+    list: SortedList<T>,
+    callback: (item: T, i: number) => void,
 ): void => {
-    for (const item of items) {
-        callback(item);
-    }
-    if (next) {
-        each(next, callback);
+    let counter = 0;
+    for (
+        let current: SortedList<T> | undefined = list;
+        current;
+        current = current.next
+    ) {
+        const { items } = current;
+        const l = items.length;
+        for (let i = 0; i < l; i++) {
+            callback(items[i], counter);
+            counter++;
+        }
     }
 };
 
