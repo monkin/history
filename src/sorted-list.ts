@@ -46,6 +46,24 @@ const split = <T>(list: SortedList<T>): SortedList<T> => {
     return create(items.slice(0, middle), create(items.slice(middle), next));
 };
 
+export const each = <T>(
+    { items, next }: SortedList<T>,
+    callback: (item: T) => void,
+): void => {
+    for (const item of items) {
+        callback(item);
+    }
+    if (next) {
+        each(next, callback);
+    }
+};
+
+export const toArray = <T>(list: SortedList<T>): T[] => {
+    const result: T[] = [];
+    each(list, (item) => result.push(item));
+    return result;
+};
+
 export const insert = <T>(
     list: SortedList<T>,
     item: T,

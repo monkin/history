@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
     CompareResult,
+    each,
     emptyList,
     insert,
     type SortedList,
+    toArray,
 } from "./sorted-list";
 
 describe("SortedList", () => {
@@ -17,7 +19,7 @@ describe("SortedList", () => {
         let list: SortedList<number> = insert(emptyList, 10, compare);
         list = insert(list, 20, compare);
         list = insert(list, 15, compare);
-        expect(list.items).toEqual([10, 15, 20]);
+        expect(toArray(list)).toEqual([10, 15, 20]);
     });
 
     it("should replace an item in the middle if equal", () => {
@@ -31,19 +33,20 @@ describe("SortedList", () => {
             return CompareResult.Equal;
         };
 
-        let listObj = insert(emptyList as any, obj10, compareObj);
+        let listObj = insert(emptyList, obj10, compareObj);
         listObj = insert(listObj, obj20, compareObj);
         listObj = insert(listObj, obj15, compareObj);
 
         const obj15new = { val: 15, tag: "new" };
         const updatedList = insert(listObj, obj15new, compareObj);
 
-        expect(updatedList.items[1]).toBe(obj15new);
-        expect(updatedList.items[1]).not.toBe(obj15);
+        const items = toArray(updatedList);
+        expect(items[1]).toBe(obj15new);
+        expect(items[1]).not.toBe(obj15);
     });
 
     it("should not change list if item is exactly equal (===) to existing item", () => {
-        let list: SortedList<number> = insert(emptyList as any, 10, compare);
+        let list: SortedList<number> = insert(emptyList, 10, compare);
         list = insert(list, 20, compare);
         list = insert(list, 15, compare);
 
@@ -52,7 +55,7 @@ describe("SortedList", () => {
     });
 
     it("should split chunks when they grow too large", () => {
-        let list = emptyList as any;
+        let list: SortedList<number> = emptyList;
         for (let i = 0; i < 100; i++) {
             list = insert(list, i * 2, compare);
         }
@@ -60,22 +63,22 @@ describe("SortedList", () => {
         list = insert(list, 55, compare);
 
         // Verify structure
-        let current = list;
+        let current: SortedList<number> | undefined = list;
         while (current) {
             expect(current.items.length).toBeLessThanOrEqual(32);
             current = current.next;
         }
 
         // Verify items are all there and sorted
-        const allItems = [];
-        current = list;
-        while (current) {
-            allItems.push(...current.items);
-            current = current.next;
-        }
+        const allItems = toArray(list);
         expect(allItems).toContain(55);
-        for (let i = 0; i < allItems.length - 1; i++) {
-            expect(allItems[i]).toBeLessThan(allItems[i + 1]);
-        }
+
+        let previous: number | undefined;
+        each(list, (item) => {
+            if (previous !== undefined) {
+                expect(item).toBeGreaterThan(previous);
+            }
+            previous = item;
+        });
     });
 });
