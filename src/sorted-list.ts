@@ -1,6 +1,6 @@
 /**
  * The list stores values in chunks.
- * If length of the current chunk is greater than CHUNK_SIZE, it will be split into smaller chunks.
+ * If the length of the current chunk is greater than CHUNK_SIZE, it will be split into smaller chunks.
  */
 const CHUNK_SIZE = 32;
 
@@ -32,24 +32,19 @@ interface SortedList<T> {
 
 export const emptyList: SortedList<never> = { items: [], next: undefined };
 
-const create = <T>(items: T[], next?: SortedList<T>): SortedList<T> => ({
-    items,
-    next,
-});
+const create = <T>(items: T[], next?: SortedList<T>): SortedList<T> =>
+    split({
+        items,
+        next,
+    });
 
 const split = <T>(list: SortedList<T>): SortedList<T> => {
     const { items, next } = list;
     const l = items.length;
     if (l <= CHUNK_SIZE) return list;
-    const midle = l >> 1;
-    return split(
-        create(items.slice(0, midle), split(create(items.slice(midle), next))),
-    );
+    const middle = l >> 1;
+    return create(items.slice(0, middle), create(items.slice(middle), next));
 };
-
-const getFirst = <T>(list: SortedList<T>): T | undefined => list.items[0];
-const getLast = <T>(list: SortedList<T>): T | undefined =>
-    list.items[list.items.length - 1];
 
 export const insert = <T>(
     list: SortedList<T>,
@@ -84,7 +79,7 @@ export const insert = <T>(
             const newNext = insert(next, item, compare);
             return newNext === next ? list : create(items, newNext);
         } else {
-            return split(create([...items, item]));
+            return create([...items, item]);
         }
     }
 
@@ -100,4 +95,22 @@ export const insert = <T>(
     }
 
     // inserting the item between the first and the last item
+    let low = 1,
+        high = l - 2;
+    while (low <= high) {
+        const mid = (low + high) >> 1;
+        const cmp = compare(item, items[mid]);
+        if (cmp === CompareResult.Equal) {
+            return items[mid] === item
+                ? list
+                : create(
+                      [...items.slice(0, mid), item, ...items.slice(mid + 1)],
+                      next,
+                  );
+        }
+        if (cmp === CompareResult.Greater) low = mid + 1;
+        else high = mid - 1;
+    }
+
+    return create([...items.slice(0, low), item, ...items.slice(low)], next);
 };
