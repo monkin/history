@@ -11,6 +11,7 @@ export const enum CompareResult {
 }
 
 export type CompareFunction<T> = (a: T, b: T) => CompareResult;
+export type LookupFunction<T> = (value: T) => CompareResult;
 
 /**
  * Immutable sorted list.
@@ -33,10 +34,14 @@ export interface SortedList<T> {
 export const emptyList: SortedList<never> = { items: [], next: undefined };
 
 const create = <T>(items: T[], next?: SortedList<T>): SortedList<T> =>
-    split({
-        items,
-        next,
-    });
+    items.length
+        ? split({
+              items,
+              next,
+          })
+        : next
+          ? next
+          : emptyList;
 
 const split = <T>(list: SortedList<T>): SortedList<T> => {
     const { items, next } = list;

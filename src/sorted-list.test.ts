@@ -194,5 +194,22 @@ describe("SortedList", () => {
             const list3 = insertAll(list, items, compare);
             expect(list3).toBe(list);
         });
+
+        it("should return the same list if inserting same items into a multichunk list", () => {
+            const items = [];
+            for (let i = 0; i < 100; i++) {
+                items.push(i);
+            }
+            const list = insertAll(emptyList, items, compare);
+
+            // Re-inserting all items
+            const list2 = insertAll(list, items, compare);
+            expect(list2).toBe(list);
+
+            // Re-inserting a subset that matches exactly (identities)
+            const subset = items.slice(10, 50);
+            const list3 = insertAll(list, subset, compare);
+            expect(list3).toBe(list);
+        });
     });
 });
