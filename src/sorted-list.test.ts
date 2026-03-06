@@ -3,8 +3,10 @@ import {
     CompareResult,
     each,
     emptyList,
+    getItem,
     insert,
     insertAll,
+    type LookupFunction,
     type SortedList,
     toArray,
 } from "./sorted-list";
@@ -210,6 +212,81 @@ describe("SortedList", () => {
             const subset = items.slice(10, 50);
             const list3 = insertAll(list, subset, compare);
             expect(list3).toBe(list);
+        });
+    });
+
+    describe("getItem", () => {
+        const createLookup =
+            (target: number): LookupFunction<number> =>
+            (value: number) => {
+                if (target < value) return CompareResult.Less;
+                if (target > value) return CompareResult.Greater;
+                return CompareResult.Equal;
+            };
+
+        it("should find an item in a single-chunk list", () => {
+            const list = insertAll(emptyList, [10, 20, 30], compare);
+            expect(getItem(list, createLookup(10))).toBe(10);
+            expect(getItem(list, createLookup(20))).toBe(20);
+            expect(getItem(list, createLookup(30))).toBe(30);
+        });
+
+        it("should return undefined if item is not in single-chunk list", () => {
+            const list = insertAll(emptyList, [10, 20, 30], compare);
+            expect(getItem(list, createLookup(5))).toBeUndefined();
+            expect(getItem(list, createLookup(15))).toBeUndefined();
+            expect(getItem(list, createLookup(35))).toBeUndefined();
+        });
+
+        it("should find an item in a multi-chunk list", () => {
+            const items = [];
+            for (let i = 0; i < 100; i++) items.push(i * 10);
+            const list = insertAll(emptyList, items, compare);
+
+            // Check items in different chunks
+            expect(getItem(list, createLookup(0))).toBe(0); // first chunk, first item
+            expect(getItem(list, createLookup(310))).toBe(310); // first chunk, last item (approx)
+            expect(getItem(list, createLookup(320))).toBe(320); // second chunk, first item
+            expect(getItem(list, createLookup(990))).toBe(990); // last chunk, last item
+            expect(getItem(list, createLookup(500))).toBe(500); // middle chunk
+        });
+
+        it("should return undefined if item is not in multi-chunk list", () => {
+            const items = [];
+            for (let i = 0; i < 100; i++) items.push(i * 10);
+            const list = insertAll(emptyList, items, compare);
+
+            expect(getItem(list, createLookup(-5))).toBeUndefined();
+            expect(getItem(list, createLookup(5))).toBeUndefined();
+            expect(getItem(list, createLookup(315))).toBeUndefined();
+            expect(getItem(list, createLookup(1000))).toBeUndefined();
+        });
+
+        it("should handle empty list", () => {
+            expect(getItem(emptyList, createLookup(10))).toBeUndefined();
+        });
+
+        it("should work with objects", () => {
+            const obj10 = { id: 10, name: "ten" };
+            const obj20 = { id: 20, name: "twenty" };
+            const compareObj = (a: { id: number }, b: { id: number }) => {
+                if (a.id < b.id) return CompareResult.Less;
+                if (a.id > b.id) return CompareResult.Greater;
+                return CompareResult.Equal;
+            };
+            const list = insertAll(
+                emptyList as SortedList<{ id: number; name: string }>,
+                [obj10, obj20],
+                compareObj,
+            );
+
+            const lookup = (val: { id: number }) => {
+                if (10 < val.id) return CompareResult.Less;
+                if (10 > val.id) return CompareResult.Greater;
+                return CompareResult.Equal;
+            };
+
+            expect(getItem(list, lookup)).toBe(obj10);
         });
     });
 });

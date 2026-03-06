@@ -257,3 +257,48 @@ export const insertAll = <T>(
     }
     return insertAllSorted(list, uniqueSorted, compare);
 };
+
+export const getItem = <T>(
+    list: SortedList<T>,
+    lookup: LookupFunction<T>,
+): T | undefined => {
+    let current: SortedList<T> | undefined = list;
+    while (current) {
+        const { items } = current;
+        const next: SortedList<T> | undefined = current.next;
+
+        const l = items.length;
+        if (l === 0) {
+            current = next;
+            continue;
+        }
+
+        const first = items[0];
+        const cmpFirst = lookup(first);
+        if (cmpFirst === CompareResult.Equal) return first;
+        if (cmpFirst === CompareResult.Less) return undefined;
+
+        const last = items[l - 1];
+        const cmpLast = lookup(last);
+        if (cmpLast === CompareResult.Equal) return last;
+        if (cmpLast === CompareResult.Greater) {
+            current = next;
+            continue;
+        }
+
+        // Binary search in items[1...l-2]
+        let low = 1;
+        let high = l - 2;
+        while (low <= high) {
+            const mid = (low + high) >> 1;
+            const item = items[mid];
+            const cmp = lookup(item);
+            if (cmp === CompareResult.Equal) return item;
+            if (cmp === CompareResult.Greater) low = mid + 1;
+            else high = mid - 1;
+        }
+
+        return undefined;
+    }
+    return undefined;
+};
