@@ -266,6 +266,19 @@ export const insertAll = <T>(
     return insertAllSorted(list, uniqueSorted, compare);
 };
 
+export const filter = <T>(
+    list: SortedList<T>,
+    predicate: (item: T) => boolean,
+): SortedList<T> => {
+    const { items, next } = list;
+    const filteredItems = items.filter(predicate);
+    const filteredNext = next ? filter(next, predicate) : undefined;
+
+    return filteredItems.length === items.length && filteredNext === next
+        ? list
+        : create(filteredItems, filteredNext);
+};
+
 export const getItem = <T>(
     list: SortedList<T>,
     lookup: LookupFunction<T>,

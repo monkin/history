@@ -3,6 +3,7 @@ import {
     CompareResult,
     each,
     emptyList,
+    filter,
     getItem,
     insert,
     insertAll,
@@ -363,6 +364,47 @@ describe("SortedList", () => {
         it("should handle empty list", () => {
             const updated = remove(emptyList, createLookup(10));
             expect(updated).toBe(emptyList);
+        });
+    });
+
+    describe("filter", () => {
+        it("should filter items", () => {
+            const items = [10, 20, 30, 40, 50];
+            const list = insertAll(emptyList, items, compare);
+            const filtered = filter(list, (x: number) => x > 25);
+            expect(toArray(filtered)).toEqual([30, 40, 50]);
+        });
+
+        it("should return empty list if all items are filtered out", () => {
+            const items = [10, 20, 30];
+            const list = insertAll(emptyList, items, compare);
+            const filtered = filter(list, (x: number) => x > 100);
+            expect(toArray(filtered)).toEqual([]);
+            expect(filtered).toBe(emptyList);
+        });
+
+        it("should return the same list if all items match the predicate", () => {
+            const items = [10, 20, 30];
+            const list = insertAll(emptyList, items, compare);
+            const filtered = filter(list, (x: number) => x > 0);
+            expect(filtered).toBe(list);
+        });
+
+        it("should handle multi-chunk lists", () => {
+            const items = [];
+            for (let i = 0; i < 100; i++) {
+                items.push(i);
+            }
+            const list = insertAll(emptyList, items, compare);
+            const filtered = filter(list, (x: number) => x % 10 === 0);
+            expect(toArray(filtered)).toEqual([
+                0, 10, 20, 30, 40, 50, 60, 70, 80, 90,
+            ]);
+        });
+
+        it("should handle empty list", () => {
+            const filtered = filter(emptyList, (x: number) => x > 0);
+            expect(filtered).toBe(emptyList);
         });
     });
 });
