@@ -8,6 +8,7 @@ import {
     insertAll,
     iterate,
     type LookupFunction,
+    remove,
     type SortedList,
     toArray,
 } from "./sorted-list";
@@ -308,6 +309,60 @@ describe("SortedList", () => {
             };
 
             expect(getItem(list, lookup)).toBe(obj10);
+        });
+    });
+
+    describe("remove", () => {
+        const createLookup =
+            (target: number): LookupFunction<number> =>
+            (value: number) => {
+                if (target < value) return CompareResult.Less;
+                if (target > value) return CompareResult.Greater;
+                return CompareResult.Equal;
+            };
+
+        it("should remove an item in a single-chunk list", () => {
+            const list = insertAll(emptyList, [10, 20, 30], compare);
+            const updated = remove(list, createLookup(20));
+            expect(toArray(updated)).toEqual([10, 30]);
+            expect(updated).not.toBe(list);
+        });
+
+        it("should return the same list if item to remove is not in list", () => {
+            const list = insertAll(emptyList, [10, 20, 30], compare);
+            const updated = remove(list, createLookup(15));
+            expect(updated).toBe(list);
+        });
+
+        it("should remove the first item in a chunk", () => {
+            const list = insertAll(emptyList, [10, 20, 30], compare);
+            const updated = remove(list, createLookup(10));
+            expect(toArray(updated)).toEqual([20, 30]);
+        });
+
+        it("should remove the last item in a chunk", () => {
+            const list = insertAll(emptyList, [10, 20, 30], compare);
+            const updated = remove(list, createLookup(30));
+            expect(toArray(updated)).toEqual([10, 20]);
+        });
+
+        it("should remove an item in a multi-chunk list", () => {
+            const items = [];
+            for (let i = 0; i < 100; i++) items.push(i * 10);
+            const list = insertAll(emptyList, items, compare);
+
+            // Removing item from middle chunk
+            const updated = remove(list, createLookup(500));
+            const resultItems = toArray(updated);
+            expect(resultItems.length).toBe(99);
+            expect(resultItems).not.toContain(500);
+            expect(resultItems).toContain(490);
+            expect(resultItems).toContain(510);
+        });
+
+        it("should handle empty list", () => {
+            const updated = remove(emptyList, createLookup(10));
+            expect(updated).toBe(emptyList);
         });
     });
 });

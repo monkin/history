@@ -318,3 +318,58 @@ export const hasItem = <T>(
     list: SortedList<T>,
     lookup: LookupFunction<T>,
 ): boolean => getItem(list, lookup) !== undefined;
+
+export const remove = <T>(
+    list: SortedList<T>,
+    lookup: LookupFunction<T>,
+): SortedList<T> => {
+    const { items, next } = list;
+    const l = items.length;
+    if (l === 0) {
+        return next ? remove(next, lookup) : list;
+    }
+
+    const first = items[0];
+    const cmpFirst = lookup(first);
+    if (cmpFirst === CompareResult.Equal) {
+        return create(items.slice(1), next);
+    }
+    if (cmpFirst === CompareResult.Less) {
+        return list;
+    }
+
+    const last = items[l - 1];
+    const cmpLast = lookup(last);
+    if (cmpLast === CompareResult.Equal) {
+        return create(items.slice(0, l - 1), next);
+    }
+    if (cmpLast === CompareResult.Greater) {
+        if (next) {
+            const newNext = remove(next, lookup);
+            return newNext === next ? list : create(items, newNext);
+        }
+        return list;
+    }
+
+    // Binary search in items[1...l-2]
+    let low = 1;
+    let high = l - 2;
+    while (low <= high) {
+        const mid = (low + high) >> 1;
+        const item = items[mid];
+        const cmp = lookup(item);
+        if (cmp === CompareResult.Equal) {
+            return create(
+                [...items.slice(0, mid), ...items.slice(mid + 1)],
+                next,
+            );
+        }
+        if (cmp === CompareResult.Greater) {
+            low = mid + 1;
+        } else {
+            high = mid - 1;
+        }
+    }
+
+    return list;
+};
