@@ -154,11 +154,7 @@ export class History<Id extends string | number, Operation> {
     static empty<Id extends string | number, Value>(
         generateId: History.IdGenerator<Id>,
     ): History<Id, Value> {
-        return new History(
-            emptyList as SortedList<History.Entry<Id, Value>>,
-            undefined,
-            generateId,
-        );
+        return new History(emptyList, undefined, generateId);
     }
 
     static fromItems<Id extends string | number, Value>(
@@ -167,11 +163,7 @@ export class History<Id extends string | number, Operation> {
         generateId: History.IdGenerator<Id>,
     ): History<Id, Value> {
         return new History(
-            insertAll(
-                emptyList as SortedList<History.Entry<Id, Value>>,
-                items,
-                compareEntries,
-            ),
+            insertAll(emptyList, items, compareEntries),
             current,
             generateId,
         );
