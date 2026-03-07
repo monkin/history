@@ -46,6 +46,10 @@ export class History<Id extends string | number, Operation> {
         return this.items.items[0]?.id;
     }
 
+    get(id: Id): History.Entry<Id, Operation> | undefined {
+        return getItem(this.items, lookupById(id));
+    }
+
     /**
      * Calculates the age position of an element identified by the given id within a collection.
      * The method iterates through the collection, compares ids, and determines the position if found.
