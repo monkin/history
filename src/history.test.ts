@@ -5,15 +5,15 @@ import { CompareResult, emptyList, insert } from "./sorted-list.ts";
 interface MyEntry extends History.Entry<number, string> {
     id: number;
     previous: number | undefined;
-    value: string;
+    operation: string;
 }
 
 function createItem(
     id: number,
     previous?: number,
-    value: string = "test",
+    operation: string = "test",
 ): MyEntry {
-    return { id, previous, value: value };
+    return { id, previous, operation };
 }
 
 describe("History", () => {
@@ -94,7 +94,7 @@ describe("History", () => {
         ((maxId as number) ?? 0) + 1;
 
     describe("add", () => {
-        it("should add a new value and update current", () => {
+        it("should add a new operation and update current", () => {
             let history = new History<number, string>(
                 emptyList as any,
                 undefined,
@@ -104,14 +104,14 @@ describe("History", () => {
             history = history.add("op1");
             expect(history.current).toBe(1);
             expect(Array.from(history)).toEqual([
-                { id: 1, value: "op1", previous: undefined },
+                { id: 1, operation: "op1", previous: undefined },
             ]);
 
             history = history.add("op2");
             expect(history.current).toBe(2);
             expect(Array.from(history)).toEqual([
-                { id: 2, value: "op2", previous: 1 },
-                { id: 1, value: "op1", previous: undefined },
+                { id: 2, operation: "op2", previous: 1 },
+                { id: 1, operation: "op1", previous: undefined },
             ]);
         });
     });
@@ -129,9 +129,9 @@ describe("History", () => {
 
             const all = Array.from(history.all());
             expect(all).toEqual([
-                { id: 3, value: "op3", previous: 2 },
-                { id: 2, value: "op2", previous: 1 },
-                { id: 1, value: "op1", previous: undefined },
+                { id: 3, operation: "op3", previous: 2 },
+                { id: 2, operation: "op2", previous: 1 },
+                { id: 1, operation: "op1", previous: undefined },
             ]);
         });
 
@@ -148,9 +148,9 @@ describe("History", () => {
 
             const all = Array.from(history.all());
             expect(all).toEqual([
-                { id: 3, value: "op3", previous: 2 },
-                { id: 2, value: "op2", previous: 1 },
-                { id: 1, value: "op1", previous: undefined },
+                { id: 3, operation: "op3", previous: 2 },
+                { id: 2, operation: "op2", previous: 1 },
+                { id: 1, operation: "op1", previous: undefined },
             ]);
         });
 
@@ -180,7 +180,7 @@ describe("History", () => {
             history = history.undo();
             expect(history.current).toBe(1);
             expect(Array.from(history)).toEqual([
-                { id: 1, value: "op1", previous: undefined },
+                { id: 1, operation: "op1", previous: undefined },
             ]);
 
             history = history.undo();
@@ -190,14 +190,14 @@ describe("History", () => {
             history = history.redo();
             expect(history.current).toBe(1);
             expect(Array.from(history)).toEqual([
-                { id: 1, value: "op1", previous: undefined },
+                { id: 1, operation: "op1", previous: undefined },
             ]);
 
             history = history.redo();
             expect(history.current).toBe(2);
             expect(Array.from(history)).toEqual([
-                { id: 2, value: "op2", previous: 1 },
-                { id: 1, value: "op1", previous: undefined },
+                { id: 2, operation: "op2", previous: 1 },
+                { id: 1, operation: "op1", previous: undefined },
             ]);
         });
     });
@@ -217,9 +217,9 @@ describe("History", () => {
     describe("upload", () => {
         it("should upload missing older items", () => {
             let history = History.empty<number, string>(generateId);
-            const item1 = { id: 1, value: "op1", previous: undefined };
-            const item2 = { id: 2, value: "op2", previous: 1 };
-            const item3 = { id: 3, value: "op3", previous: 2 };
+            const item1 = { id: 1, operation: "op1", previous: undefined };
+            const item2 = { id: 2, operation: "op2", previous: 1 };
+            const item3 = { id: 3, operation: "op3", previous: 2 };
 
             history = history.upload([item3]);
             expect(history.current).toBeUndefined();
@@ -234,7 +234,7 @@ describe("History", () => {
 
             const updatedItem = {
                 id: 1,
-                value: "updated op1",
+                operation: "updated op1",
                 previous: undefined,
             };
             history = history.upload([updatedItem]);
@@ -246,9 +246,9 @@ describe("History", () => {
 
     describe("fromItems", () => {
         it("should create history from items and current pointer", () => {
-            const item1 = { id: 1, value: "op1", previous: undefined };
-            const item2 = { id: 2, value: "op2", previous: 1 };
-            const item3 = { id: 3, value: "op3", previous: 2 };
+            const item1 = { id: 1, operation: "op1", previous: undefined };
+            const item2 = { id: 2, operation: "op2", previous: 1 };
+            const item3 = { id: 3, operation: "op3", previous: 2 };
             const items = [item1, item2, item3];
 
             const history = History.fromItems<number, string>(
@@ -275,9 +275,9 @@ describe("History", () => {
         });
 
         it("should handle out-of-order items", () => {
-            const item1 = { id: 1, value: "op1", previous: undefined };
-            const item2 = { id: 2, value: "op2", previous: 1 };
-            const item3 = { id: 3, value: "op3", previous: 2 };
+            const item1 = { id: 1, operation: "op1", previous: undefined };
+            const item2 = { id: 2, operation: "op2", previous: 1 };
+            const item3 = { id: 3, operation: "op3", previous: 2 };
             const items = [item3, item1, item2]; // out of order
 
             const history = History.fromItems<number, string>(

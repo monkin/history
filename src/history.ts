@@ -10,16 +10,16 @@ import {
 } from "./sorted-list";
 
 /**
- * Read-only history of values.
+ * Read-only history of operations.
  *
- * It contains a linked list of values with references to the previous one.
- * Value can be added to the history but cannot be removed.
+ * It contains a linked list of operations with references to the previous one.
+ * Operation can be added to the history but cannot be removed.
  *
- * Undo/redo are implemented by moving the `current` value pointer.
+ * Undo/redo are implemented by moving the `current` operation pointer.
  *
  * For one-click actions everything is straight forward. Continuous actions
  * (resizing while mouse moving, for example) should be stored outside until the
- * value is finished ('mouseup' in case of resizing).
+ * operation is finished ('mouseup' in case of resizing).
  */
 export class History<Id extends string | number, Operation> {
     /** @internal */
@@ -55,7 +55,7 @@ export class History<Id extends string | number, Operation> {
 
     /**
      * Upload a list of items to the history.
-     * This value should be used for partial history loading.
+     * This operation should be used for partial history loading.
      * It won't change `current`, since it uploads older item.
      */
     upload(items: History.Entry<Id, Operation>[]): History<Id, Operation> {
@@ -75,14 +75,14 @@ export class History<Id extends string | number, Operation> {
     }
 
     /**
-     * Add a new value to the history.
+     * Add a new operation to the history.
      */
-    add(value: Operation): History<Id, Operation> {
+    add(operation: Operation): History<Id, Operation> {
         const { items, current, generateId, maxId } = this;
 
         const id = generateId(maxId);
         return new History(
-            insert(items, { id, value, previous: current }, compareEntries),
+            insert(items, { id, operation, previous: current }, compareEntries),
             id,
             generateId,
         );
@@ -122,9 +122,9 @@ export class History<Id extends string | number, Operation> {
     }
 
     /**
-     * Iterate over history. Undone values are skipped.
+     * Iterate over history. Undone operations are skipped.
      *
-     * To iterate over all values, use `for (const item of history.all()) { ... }` instead.
+     * To iterate over all operations, use `for (const item of history.all()) { ... }` instead.
      */
     [Symbol.iterator](): Generator<History.Entry<Id, Operation>> {
         return this.iterate(this.current);
@@ -151,17 +151,17 @@ export class History<Id extends string | number, Operation> {
         }
     }
 
-    static empty<Id extends string | number, Value>(
+    static empty<Id extends string | number, Operation>(
         generateId: History.IdGenerator<Id>,
-    ): History<Id, Value> {
+    ): History<Id, Operation> {
         return new History(emptyList, undefined, generateId);
     }
 
-    static fromItems<Id extends string | number, Value>(
+    static fromItems<Id extends string | number, Operation>(
         current: Id | undefined,
-        items: History.Entry<Id, Value>[],
+        items: History.Entry<Id, Operation>[],
         generateId: History.IdGenerator<Id>,
-    ): History<Id, Value> {
+    ): History<Id, Operation> {
         return new History(
             insertAll(emptyList, items, compareEntries),
             current,
@@ -193,10 +193,10 @@ export namespace History {
      *
      * Each entry has a unique id and a reference to the previous one.
      */
-    export interface Entry<Id extends string | number, Value> {
+    export interface Entry<Id extends string | number, Operation> {
         readonly id: Id;
         readonly previous: Id | undefined;
-        readonly value: Value;
+        readonly operation: Operation;
     }
 
     /**
@@ -205,9 +205,10 @@ export namespace History {
     export type Id<T extends Entry<string | number, unknown>> = T["id"];
 
     /**
-     * Get the value type of the entry.
+     * Get the operation type of the entry.
      */
-    export type Value<T extends Entry<string | number, unknown>> = T["value"];
+    export type Operation<T extends Entry<string | number, unknown>> =
+        T["operation"];
 
     /**
      * Generate a new id for the history.
