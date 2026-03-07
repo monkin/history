@@ -39,6 +39,9 @@ export class History<Id extends string | number, Operation> {
         readonly generateId: History.IdGenerator<Id>,
     ) {}
 
+    /**
+     * @internal
+     */
     private get maxId(): Id | undefined {
         return this.items.items[0]?.id;
     }

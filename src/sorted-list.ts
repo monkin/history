@@ -4,6 +4,9 @@
  */
 const CHUNK_SIZE = 32;
 
+/**
+ * @internal
+ */
 export const enum Comparison {
     Less = -1,
     Equal = 0,
@@ -21,6 +24,8 @@ export type LookupFunction<T> = (value: T) => Comparison;
  * If two items are equal, the latest one will replace the older one.
  *
  * It's implemented as an interface and set of functions to make it smaller after minification.
+ *
+ * @internal
  */
 export interface SortedList<T> {
     /**

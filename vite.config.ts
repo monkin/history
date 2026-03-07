@@ -13,6 +13,7 @@ export default defineConfig({
             name: "history",
             fileName: (format) => `history.${format === "es" ? "js" : "cjs"}`,
         },
+        minify: "terser",
         rollupOptions: {
             external: [],
             output: {
