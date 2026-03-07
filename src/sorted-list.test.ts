@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-    CompareResult,
+    Comparison,
     each,
     emptyList,
     filter,
@@ -16,9 +16,9 @@ import {
 
 describe("SortedList", () => {
     const compare = (a: number, b: number) => {
-        if (a < b) return CompareResult.Less;
-        if (a > b) return CompareResult.Greater;
-        return CompareResult.Equal;
+        if (a < b) return Comparison.Less;
+        if (a > b) return Comparison.Greater;
+        return Comparison.Equal;
     };
 
     it("should insert between first and last", () => {
@@ -34,9 +34,9 @@ describe("SortedList", () => {
         const obj20 = { val: 20 };
 
         const compareObj = (a: { val: number }, b: { val: number }) => {
-            if (a.val < b.val) return CompareResult.Less;
-            if (a.val > b.val) return CompareResult.Greater;
-            return CompareResult.Equal;
+            if (a.val < b.val) return Comparison.Less;
+            if (a.val > b.val) return Comparison.Greater;
+            return Comparison.Equal;
         };
 
         let listObj = insert(emptyList, obj10, compareObj);
@@ -146,9 +146,9 @@ describe("SortedList", () => {
 
     describe("insertAll", () => {
         const compare = (a: number, b: number) => {
-            if (a < b) return CompareResult.Less;
-            if (a > b) return CompareResult.Greater;
-            return CompareResult.Equal;
+            if (a < b) return Comparison.Less;
+            if (a > b) return Comparison.Greater;
+            return Comparison.Equal;
         };
 
         it("should handle empty array", () => {
@@ -172,9 +172,9 @@ describe("SortedList", () => {
             const obj30 = { val: 30, tag: "old30" };
 
             const compareObj = (a: { val: number }, b: { val: number }) => {
-                if (a.val < b.val) return CompareResult.Less;
-                if (a.val > b.val) return CompareResult.Greater;
-                return CompareResult.Equal;
+                if (a.val < b.val) return Comparison.Less;
+                if (a.val > b.val) return Comparison.Greater;
+                return Comparison.Equal;
             };
 
             let list = insertAll(emptyList, [obj10, obj20, obj30], compareObj);
@@ -278,9 +278,9 @@ describe("SortedList", () => {
         const createLookup =
             (target: number): LookupFunction<number> =>
             (value: number) => {
-                if (target < value) return CompareResult.Less;
-                if (target > value) return CompareResult.Greater;
-                return CompareResult.Equal;
+                if (target < value) return Comparison.Less;
+                if (target > value) return Comparison.Greater;
+                return Comparison.Equal;
             };
 
         it("should find an item in a single-chunk list", () => {
@@ -329,9 +329,9 @@ describe("SortedList", () => {
             const obj10 = { id: 10, name: "ten" };
             const obj20 = { id: 20, name: "twenty" };
             const compareObj = (a: { id: number }, b: { id: number }) => {
-                if (a.id < b.id) return CompareResult.Less;
-                if (a.id > b.id) return CompareResult.Greater;
-                return CompareResult.Equal;
+                if (a.id < b.id) return Comparison.Less;
+                if (a.id > b.id) return Comparison.Greater;
+                return Comparison.Equal;
             };
             const list = insertAll(
                 emptyList as SortedList<{ id: number; name: string }>,
@@ -340,9 +340,9 @@ describe("SortedList", () => {
             );
 
             const lookup = (val: { id: number }) => {
-                if (10 < val.id) return CompareResult.Less;
-                if (10 > val.id) return CompareResult.Greater;
-                return CompareResult.Equal;
+                if (10 < val.id) return Comparison.Less;
+                if (10 > val.id) return Comparison.Greater;
+                return Comparison.Equal;
             };
 
             expect(getItem(list, lookup)).toBe(obj10);
@@ -353,9 +353,9 @@ describe("SortedList", () => {
         const createLookup =
             (target: number): LookupFunction<number> =>
             (value: number) => {
-                if (target < value) return CompareResult.Less;
-                if (target > value) return CompareResult.Greater;
-                return CompareResult.Equal;
+                if (target < value) return Comparison.Less;
+                if (target > value) return Comparison.Greater;
+                return Comparison.Equal;
             };
 
         it("should remove an item in a single-chunk list", () => {

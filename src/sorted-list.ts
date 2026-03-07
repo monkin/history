@@ -4,14 +4,14 @@
  */
 const CHUNK_SIZE = 32;
 
-export const enum CompareResult {
+export const enum Comparison {
     Less = -1,
     Equal = 0,
     Greater = 1,
 }
 
-export type CompareFunction<T> = (a: T, b: T) => CompareResult;
-export type LookupFunction<T> = (value: T) => CompareResult;
+export type CompareFunction<T> = (a: T, b: T) => Comparison;
+export type LookupFunction<T> = (value: T) => Comparison;
 
 /**
  * Immutable sorted list.
@@ -100,21 +100,21 @@ export const insert = <T>(
     const first = items[0];
     const compareFirst = compare(item, first);
     // the item is before the first item in the current chunk
-    if (compareFirst === CompareResult.Less) {
+    if (compareFirst === Comparison.Less) {
         return items.length < CHUNK_SIZE
             ? create([item, ...items], next)
             : create([item], list);
     }
 
     // replacing the first item
-    if (compareFirst === CompareResult.Equal) {
+    if (compareFirst === Comparison.Equal) {
         return first === item ? list : create([item, ...items.slice(1)], next);
     }
 
     const last = items[l - 1];
     const compareLast = compare(item, last);
     // the item is behind the last item in the current chunk
-    if (compareLast === CompareResult.Greater) {
+    if (compareLast === Comparison.Greater) {
         if (next) {
             const newNext = insert(next, item, compare);
             return newNext === next ? list : create(items, newNext);
@@ -124,7 +124,7 @@ export const insert = <T>(
     }
 
     // replacing the last item
-    if (compareLast === CompareResult.Equal) {
+    if (compareLast === Comparison.Equal) {
         if (last === item) {
             return list;
         } else {
@@ -140,7 +140,7 @@ export const insert = <T>(
     while (low <= high) {
         const mid = (low + high) >> 1;
         const cmp = compare(item, items[mid]);
-        if (cmp === CompareResult.Equal) {
+        if (cmp === Comparison.Equal) {
             return items[mid] === item
                 ? list
                 : create(
@@ -148,7 +148,7 @@ export const insert = <T>(
                       next,
                   );
         }
-        if (cmp === CompareResult.Greater) low = mid + 1;
+        if (cmp === Comparison.Greater) low = mid + 1;
         else high = mid - 1;
     }
 
@@ -173,11 +173,11 @@ const insertAllSorted = <T>(
     const first = items[0];
     const last = items[l - 1];
 
-    if (compare(values[values.length - 1], first) === CompareResult.Less) {
+    if (compare(values[values.length - 1], first) === Comparison.Less) {
         return create(values, list);
     }
 
-    if (compare(values[0], last) === CompareResult.Greater) {
+    if (compare(values[0], last) === Comparison.Greater) {
         if (next) {
             const updated = insertAllSorted(next, values, compare);
             return updated === next ? list : create(items, updated);
@@ -191,9 +191,9 @@ const insertAllSorted = <T>(
     const larger: T[] = [];
 
     for (const value of values) {
-        if (compare(value, first) === CompareResult.Less) {
+        if (compare(value, first) === Comparison.Less) {
             smaller.push(value);
-        } else if (compare(value, last) === CompareResult.Greater) {
+        } else if (compare(value, last) === Comparison.Greater) {
             larger.push(value);
         } else {
             inside.push(value);
@@ -214,10 +214,10 @@ const insertAllSorted = <T>(
     while (i < items.length || j < inside.length) {
         if (i < items.length && j < inside.length) {
             const cmp = compare(inside[j], items[i]);
-            if (cmp === CompareResult.Less) {
+            if (cmp === Comparison.Less) {
                 newItems.push(inside[j]);
                 j++;
-            } else if (cmp === CompareResult.Equal) {
+            } else if (cmp === Comparison.Equal) {
                 newItems.push(inside[j]);
                 i++;
                 j++;
@@ -265,7 +265,7 @@ export const insertAll = <T>(
         if (
             uniqueSorted.length > 0 &&
             compare(val, uniqueSorted[uniqueSorted.length - 1]) ===
-                CompareResult.Equal
+                Comparison.Equal
         ) {
             uniqueSorted[uniqueSorted.length - 1] = val;
         } else {
@@ -306,13 +306,13 @@ export const getItem = <T>(
 
         const first = items[0];
         const cmpFirst = lookup(first);
-        if (cmpFirst === CompareResult.Equal) return first;
-        if (cmpFirst === CompareResult.Less) return undefined;
+        if (cmpFirst === Comparison.Equal) return first;
+        if (cmpFirst === Comparison.Less) return undefined;
 
         const last = items[l - 1];
         const cmpLast = lookup(last);
-        if (cmpLast === CompareResult.Equal) return last;
-        if (cmpLast === CompareResult.Greater) {
+        if (cmpLast === Comparison.Equal) return last;
+        if (cmpLast === Comparison.Greater) {
             continue;
         }
 
@@ -323,8 +323,8 @@ export const getItem = <T>(
             const mid = (low + high) >> 1;
             const item = items[mid];
             const cmp = lookup(item);
-            if (cmp === CompareResult.Equal) return item;
-            if (cmp === CompareResult.Greater) {
+            if (cmp === Comparison.Equal) return item;
+            if (cmp === Comparison.Greater) {
                 low = mid + 1;
             } else {
                 high = mid - 1;
@@ -353,19 +353,19 @@ export const remove = <T>(
 
     const first = items[0];
     const cmpFirst = lookup(first);
-    if (cmpFirst === CompareResult.Equal) {
+    if (cmpFirst === Comparison.Equal) {
         return create(items.slice(1), next);
     }
-    if (cmpFirst === CompareResult.Less) {
+    if (cmpFirst === Comparison.Less) {
         return list;
     }
 
     const last = items[l - 1];
     const cmpLast = lookup(last);
-    if (cmpLast === CompareResult.Equal) {
+    if (cmpLast === Comparison.Equal) {
         return create(items.slice(0, l - 1), next);
     }
-    if (cmpLast === CompareResult.Greater) {
+    if (cmpLast === Comparison.Greater) {
         if (next) {
             const newNext = remove(next, lookup);
             return newNext === next ? list : create(items, newNext);
@@ -380,13 +380,13 @@ export const remove = <T>(
         const mid = (low + high) >> 1;
         const item = items[mid];
         const cmp = lookup(item);
-        if (cmp === CompareResult.Equal) {
+        if (cmp === Comparison.Equal) {
             return create(
                 [...items.slice(0, mid), ...items.slice(mid + 1)],
                 next,
             );
         }
-        if (cmp === CompareResult.Greater) {
+        if (cmp === Comparison.Greater) {
             low = mid + 1;
         } else {
             high = mid - 1;

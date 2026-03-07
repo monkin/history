@@ -1,6 +1,6 @@
 import { ageOf } from "./age-cache.ts";
 import {
-    CompareResult,
+    Comparison,
     emptyList,
     getItem,
     insert,
@@ -172,18 +172,18 @@ export class History<Id extends string | number, Operation> {
 const compareEntries = (
     a: History.Entry<any, any>,
     b: History.Entry<any, any>,
-): CompareResult => {
-    if (a.id < b.id) return CompareResult.Greater;
-    if (a.id > b.id) return CompareResult.Less;
-    return CompareResult.Equal;
+): Comparison => {
+    if (a.id < b.id) return Comparison.Greater;
+    if (a.id > b.id) return Comparison.Less;
+    return Comparison.Equal;
 };
 
 const lookupById =
     <Id extends string | number>(id: Id) =>
-    (entry: History.Entry<Id, unknown>): CompareResult => {
-        if (id < entry.id) return CompareResult.Greater;
-        if (id > entry.id) return CompareResult.Less;
-        return CompareResult.Equal;
+    (entry: History.Entry<Id, unknown>): Comparison => {
+        if (id < entry.id) return Comparison.Greater;
+        if (id > entry.id) return Comparison.Less;
+        return Comparison.Equal;
     };
 
 export namespace History {

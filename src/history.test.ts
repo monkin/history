@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { History } from "./history.ts";
-import { CompareResult, emptyList, insert } from "./sorted-list.ts";
+import { Comparison, emptyList, insert } from "./sorted-list.ts";
 
 interface MyEntry extends History.Entry<number, string> {
     id: number;
@@ -23,9 +23,9 @@ describe("History", () => {
         const item3 = createItem(3, 2);
 
         const compare = (a: MyEntry, b: MyEntry) => {
-            if (a.id < b.id) return CompareResult.Greater;
-            if (a.id > b.id) return CompareResult.Less;
-            return CompareResult.Equal;
+            if (a.id < b.id) return Comparison.Greater;
+            if (a.id > b.id) return Comparison.Less;
+            return Comparison.Equal;
         };
 
         let list = emptyList as any;
@@ -49,9 +49,9 @@ describe("History", () => {
         const item3 = createItem(3, 2);
 
         const compare = (a: MyEntry, b: MyEntry) => {
-            if (a.id < b.id) return CompareResult.Greater;
-            if (a.id > b.id) return CompareResult.Less;
-            return CompareResult.Equal;
+            if (a.id < b.id) return Comparison.Greater;
+            if (a.id > b.id) return Comparison.Less;
+            return Comparison.Equal;
         };
 
         let list = emptyList as any;
@@ -71,9 +71,9 @@ describe("History", () => {
     it("should return empty if current is undefined", () => {
         const item1 = createItem(1);
         const compare = (a: MyEntry, b: MyEntry) => {
-            if (a.id < b.id) return CompareResult.Greater;
-            if (a.id > b.id) return CompareResult.Less;
-            return CompareResult.Equal;
+            if (a.id < b.id) return Comparison.Greater;
+            if (a.id > b.id) return Comparison.Less;
+            return Comparison.Equal;
         };
         const list = insert(emptyList as any, item1, compare);
 
