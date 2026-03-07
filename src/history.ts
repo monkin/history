@@ -1,4 +1,4 @@
-import { ageOf } from "./age-cache.ts";
+import { ageOf } from "./age-of.ts";
 import {
     Comparison,
     emptyList,
