@@ -25,7 +25,7 @@ describe("History", () => {
         let list = new List<MyEntry>([], undefined);
         list = list.insert(item1).insert(item2).insert(item3);
 
-        const generateId: History.KeyGenerator<number> = (maxId) =>
+        const generateId: History.IdGenerator<number> = (maxId) =>
             ((maxId as number) ?? 0) + 1;
 
         const history = new History<number, string>(list, 2, generateId);
@@ -43,7 +43,7 @@ describe("History", () => {
         let list = new List<MyEntry>([], undefined);
         list = list.insert(item1).insert(item2).insert(item3);
 
-        const generateId: History.KeyGenerator<number> = (maxId) =>
+        const generateId: History.IdGenerator<number> = (maxId) =>
             ((maxId as number) ?? 0) + 1;
 
         const history = new History<number, string>(list, 3, generateId);
@@ -57,7 +57,7 @@ describe("History", () => {
         let list = new List<MyEntry>([], undefined);
         list = list.insert(item1);
 
-        const generateId: History.KeyGenerator<number> = (maxId) =>
+        const generateId: History.IdGenerator<number> = (maxId) =>
             ((maxId as number) ?? 0) + 1;
 
         const history = new History<number, string>(
@@ -70,7 +70,7 @@ describe("History", () => {
         expect(iterated).toEqual([]);
     });
 
-    const generateId: History.KeyGenerator<number> = (maxId) =>
+    const generateId: History.IdGenerator<number> = (maxId) =>
         ((maxId as number) ?? 0) + 1;
 
     describe("add", () => {

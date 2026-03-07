@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { History } from "./history.ts";
 
 describe("History.ageOf reproduction", () => {
-    const generateId: History.KeyGenerator<number> = (maxId) =>
+    const generateId: History.IdGenerator<number> = (maxId) =>
         ((maxId as number) ?? 0) + 1;
 
     it("should return correct age for all items in various orders", () => {

@@ -13,22 +13,22 @@ import { List } from "./list";
  * (resizing while mouse moving, for example) should be stored outside until the
  * value is finished ('mouseup' in case of resizing).
  */
-export class History<Key extends string | number, Operation> {
+export class History<Id extends string | number, Operation> {
     /** @internal */
     constructor(
         /** @internal */
-        readonly items: List<History.Entry<Key, Operation>>,
+        readonly items: List<History.Entry<Id, Operation>>,
         /**
          * Pointer to the current entry in the history.
          * It can be moved by undo/redo.
          */
-        readonly current: Key | undefined,
+        readonly current: Id | undefined,
         /**
-         * Function to generate a new unique key for an entry.
+         * Function to generate a new unique id for an entry.
          * It receives the biggest Id in the history if any.
-         * The generated key should be bigger than the provided one.
+         * The generated id should be bigger than the provided one.
          */
-        readonly generateId: History.KeyGenerator<Key>,
+        readonly generateId: History.IdGenerator<Id>,
     ) {}
 
     /**
@@ -36,7 +36,7 @@ export class History<Key extends string | number, Operation> {
      * The method iterates through the collection, compares ids, and determines the position if found.
      * `undefined` means that the id is not present in the collection or was undone.
      */
-    ageOf(id: Key): number | undefined {
+    ageOf(id: Id): number | undefined {
         return ageOf(this, id);
     }
 
@@ -45,7 +45,7 @@ export class History<Key extends string | number, Operation> {
      * This value should be used for partial history loading.
      * It won't change `current`, since it uploads older item.
      */
-    upload(items: History.Entry<Key, Operation>[]): History<Key, Operation> {
+    upload(items: History.Entry<Id, Operation>[]): History<Id, Operation> {
         return new History(
             this.items.insertAll(items),
             this.current,
@@ -64,7 +64,7 @@ export class History<Key extends string | number, Operation> {
     /**
      * Add a new value to the history.
      */
-    add(value: Operation): History<Key, Operation> {
+    add(value: Operation): History<Id, Operation> {
         const { items, current, generateId } = this;
 
         const id = generateId(items.maxId);
@@ -75,7 +75,7 @@ export class History<Key extends string | number, Operation> {
         );
     }
 
-    undo(): History<Key, Operation> {
+    undo(): History<Id, Operation> {
         const { items, current, generateId } = this;
 
         if (current === undefined) return this;
@@ -87,7 +87,7 @@ export class History<Key extends string | number, Operation> {
         );
     }
 
-    redo(): History<Key, Operation> {
+    redo(): History<Id, Operation> {
         const { items, current, generateId } = this;
         const { maxId } = items;
 
@@ -105,7 +105,7 @@ export class History<Key extends string | number, Operation> {
     /**
      * Retrieves a generator that yields all (undone too) items in the history.
      */
-    *all(): Generator<History.Entry<Key, Operation>> {
+    *all(): Generator<History.Entry<Id, Operation>> {
         return yield* this.items;
     }
 
@@ -114,23 +114,23 @@ export class History<Key extends string | number, Operation> {
      *
      * To iterate over all values, use `for (const item of history.all()) { ... }` instead.
      */
-    [Symbol.iterator](): Generator<History.Entry<Key, Operation>> {
+    [Symbol.iterator](): Generator<History.Entry<Id, Operation>> {
         return this.items.iterate(this.current);
     }
 
-    static empty<Key extends string | number, Value>(
-        generateId: History.KeyGenerator<Key>,
-    ): History<Key, Value> {
+    static empty<Id extends string | number, Value>(
+        generateId: History.IdGenerator<Id>,
+    ): History<Id, Value> {
         return new History(new List([], undefined), undefined, generateId);
     }
 
-    static fromItems<Key extends string | number, Value>(
-        current: Key | undefined,
-        items: History.Entry<Key, Value>[],
-        generateId: History.KeyGenerator<Key>,
-    ): History<Key, Value> {
+    static fromItems<Id extends string | number, Value>(
+        current: Id | undefined,
+        items: History.Entry<Id, Value>[],
+        generateId: History.IdGenerator<Id>,
+    ): History<Id, Value> {
         return new History(
-            new List<History.Entry<Key, Value>>([], undefined).insertAll(items),
+            new List<History.Entry<Id, Value>>([], undefined).insertAll(items),
             current,
             generateId,
         );
@@ -141,7 +141,7 @@ export namespace History {
     /**
      * Entry of the history.
      *
-     * Each entry has a unique key and a reference to the previous one.
+     * Each entry has a unique id and a reference to the previous one.
      */
     export interface Entry<Id extends string | number, Value> {
         readonly id: Id;
@@ -150,9 +150,9 @@ export namespace History {
     }
 
     /**
-     * Get the key type of the entry.
+     * Get the id type of the entry.
      */
-    export type Key<T extends Entry<string | number, unknown>> = T["id"];
+    export type Id<T extends Entry<string | number, unknown>> = T["id"];
 
     /**
      * Get the value type of the entry.
@@ -160,11 +160,11 @@ export namespace History {
     export type Value<T extends Entry<string | number, unknown>> = T["value"];
 
     /**
-     * Generate a new key for the history.
-     * @param maxKey The biggest key in the history, or undefined if the history is empty.
-     * @returns A new key. It must be bigger than the provided one.
+     * Generate a new id for the history.
+     * @param maxId The biggest id in the history, or undefined if the history is empty.
+     * @returns A new id. It must be bigger than the provided one.
      */
-    export type KeyGenerator<Key extends string | number> = (
-        maxKey: Key | undefined,
-    ) => Key;
+    export type IdGenerator<Id extends string | number> = (
+        maxId: Id | undefined,
+    ) => Id;
 }

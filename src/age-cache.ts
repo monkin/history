@@ -3,18 +3,18 @@ import type { History } from "./history.ts";
 /**
  * @internal
  */
-interface CacheState<Key extends string | number> {
-    // last key received from iterator
-    minId: Key | undefined;
-    // every next key will receive `lastAge + 1`
+interface CacheState<Id extends string | number> {
+    // last id received from iterator
+    minId: Id | undefined;
+    // every next id will receive `lastAge + 1`
     lastAge: number;
 
-    readonly cache: Map<Key, number>;
+    readonly cache: Map<Id, number>;
 
     // iterator is finished
     done: boolean;
 
-    readonly iterator: Iterator<History.Entry<Key, unknown>>;
+    readonly iterator: Iterator<History.Entry<Id, unknown>>;
 }
 
 const caches = new WeakMap<History<any, unknown>, CacheState<any>>();
@@ -22,9 +22,9 @@ const caches = new WeakMap<History<any, unknown>, CacheState<any>>();
 /**
  * @internal
  */
-export function ageOf<Key extends string | number>(
-    history: History<Key, unknown>,
-    id: Key,
+export function ageOf<Id extends string | number>(
+    history: History<Id, unknown>,
+    id: Id,
 ): number | undefined {
     let state = caches.get(history);
     if (state === undefined) {
