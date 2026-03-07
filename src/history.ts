@@ -46,8 +46,17 @@ export class History<Id extends string | number, Operation> {
         return this.items.items[0]?.id;
     }
 
+    /**
+     * Get the entry with the given id.
+     * If the item undone and do not present in current branch, returns undefined.
+     */
     get(id: Id): History.Entry<Id, Operation> | undefined {
-        return getItem(this.items, lookupById(id));
+        for (const entry of this) {
+            if (entry.id === id) {
+                return entry;
+            }
+        }
+        return undefined;
     }
 
     /**
