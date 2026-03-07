@@ -1,16 +1,12 @@
 {
     "compilerOptions": {
         "target": "ESNext",
-        "useDefineForClassFields": true,
         "module": "ESNext",
-        "lib": ["ESNext"],
-        "skipLibCheck": true,
+        "lib": ["ESNext", "DOM", "DOM.Iterable"],
         "moduleResolution": "bundler",
-        "allowImportingTsExtensions": true,
-        "verbatimModuleSyntax": true,
-        "moduleDetection": "force",
         "declaration": true,
         "emitDeclarationOnly": true,
+        "allowImportingTsExtensions": true,
         "outDir": "dist",
         "strict": true,
         "noUnusedLocals": true,
