@@ -40,8 +40,7 @@ export class History<Id extends string | number, Operation> {
     ) {}
 
     private get maxId(): Id | undefined {
-        return (this.items.items[0] as History.Entry<Id, Operation> | undefined)
-            ?.id;
+        return this.items.items[0]?.id;
     }
 
     /**
