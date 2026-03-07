@@ -1,5 +1,4 @@
 import { ageOf } from "./age-cache.ts";
-import type { Entry, KeyGenerator } from "./entry";
 import { List } from "./list";
 
 /**
@@ -18,7 +17,7 @@ export class History<Key extends string | number, Operation> {
     /** @internal */
     constructor(
         /** @internal */
-        readonly items: List<Entry<Key, Operation>>,
+        readonly items: List<History.Entry<Key, Operation>>,
         /**
          * Pointer to the current entry in the history.
          * It can be moved by undo/redo.
@@ -29,7 +28,7 @@ export class History<Key extends string | number, Operation> {
          * It receives the biggest Id in the history if any.
          * The generated key should be bigger than the provided one.
          */
-        readonly generateId: KeyGenerator<Key>,
+        readonly generateId: History.KeyGenerator<Key>,
     ) {}
 
     /**
@@ -46,7 +45,7 @@ export class History<Key extends string | number, Operation> {
      * This value should be used for partial history loading.
      * It won't change `current`, since it uploads older item.
      */
-    upload(items: Entry<Key, Operation>[]): History<Key, Operation> {
+    upload(items: History.Entry<Key, Operation>[]): History<Key, Operation> {
         return new History(
             this.items.insertAll(items),
             this.current,
@@ -106,7 +105,7 @@ export class History<Key extends string | number, Operation> {
     /**
      * Retrieves a generator that yields all (undone too) items in the history.
      */
-    *all(): Generator<Entry<Key, Operation>> {
+    *all(): Generator<History.Entry<Key, Operation>> {
         return yield* this.items;
     }
 
@@ -115,25 +114,57 @@ export class History<Key extends string | number, Operation> {
      *
      * To iterate over all values, use `for (const item of history.all()) { ... }` instead.
      */
-    [Symbol.iterator](): Generator<Entry<Key, Operation>> {
+    [Symbol.iterator](): Generator<History.Entry<Key, Operation>> {
         return this.items.iterate(this.current);
     }
 
     static empty<Key extends string | number, Value>(
-        generateId: KeyGenerator<Key>,
+        generateId: History.KeyGenerator<Key>,
     ): History<Key, Value> {
         return new History(new List([], undefined), undefined, generateId);
     }
 
     static fromItems<Key extends string | number, Value>(
         current: Key | undefined,
-        items: Entry<Key, Value>[],
-        generateId: KeyGenerator<Key>,
+        items: History.Entry<Key, Value>[],
+        generateId: History.KeyGenerator<Key>,
     ): History<Key, Value> {
         return new History(
-            new List<Entry<Key, Value>>([], undefined).insertAll(items),
+            new List<History.Entry<Key, Value>>([], undefined).insertAll(items),
             current,
             generateId,
         );
     }
+}
+
+export namespace History {
+    /**
+     * Entry of the history.
+     *
+     * Each entry has a unique key and a reference to the previous one.
+     */
+    export interface Entry<Id extends string | number, Value> {
+        readonly id: Id;
+        readonly previous: Id | undefined;
+        readonly value: Value;
+    }
+
+    /**
+     * Get the key type of the entry.
+     */
+    export type Key<T extends Entry<string | number, unknown>> = T["id"];
+
+    /**
+     * Get the value type of the entry.
+     */
+    export type Value<T extends Entry<string | number, unknown>> = T["value"];
+
+    /**
+     * Generate a new key for the history.
+     * @param maxKey The biggest key in the history, or undefined if the history is empty.
+     * @returns A new key. It must be bigger than the provided one.
+     */
+    export type KeyGenerator<Key extends string | number> = (
+        maxKey: Key | undefined,
+    ) => Key;
 }

@@ -1,4 +1,3 @@
-import type { Entry } from "./entry.ts";
 import type { History } from "./history.ts";
 
 /**
@@ -15,7 +14,7 @@ interface CacheState<Key extends string | number> {
     // iterator is finished
     done: boolean;
 
-    readonly iterator: Iterator<Entry<Key, unknown>>;
+    readonly iterator: Iterator<History.Entry<Key, unknown>>;
 }
 
 const caches = new WeakMap<History<any, unknown>, CacheState<any>>();

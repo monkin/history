@@ -1,10 +1,10 @@
-import type { Entry, Key } from "./entry";
+import type { History } from "./history";
 
 /** @internal */
 export const CHUNK_SIZE = 32;
 
 /** @internal */
-export class List<T extends Entry<string | number, unknown>> {
+export class List<T extends History.Entry<string | number, unknown>> {
     /**
      * Items sorted by id. Items should not contain more than CHUNK_SIZE elements.
      * @internal
@@ -23,7 +23,7 @@ export class List<T extends Entry<string | number, unknown>> {
     /**
      * The latest id in the list.
      */
-    get maxId(): Key<T> | undefined {
+    get maxId(): History.Key<T> | undefined {
         const { items, previous } = this;
         if (items.length) return items[0].id;
         return previous?.maxId;
@@ -38,7 +38,7 @@ export class List<T extends Entry<string | number, unknown>> {
         return items.length !== 0 || (previous?.isNotEmpty() ?? false);
     }
 
-    has(id: Key<T>): boolean {
+    has(id: History.Key<T>): boolean {
         const { maxId, items, previous } = this;
         const l = items.length;
         if (maxId && id > maxId) return false;
@@ -46,7 +46,7 @@ export class List<T extends Entry<string | number, unknown>> {
         return items.some((i) => i.id === id);
     }
 
-    get(id: Key<T>): T | undefined {
+    get(id: History.Key<T>): T | undefined {
         const { maxId, items, previous } = this;
         const l = items.length;
 

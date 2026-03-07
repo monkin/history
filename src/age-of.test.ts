@@ -1,9 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { KeyGenerator } from "./entry";
 import { History } from "./history.ts";
 
 describe("History.ageOf reproduction", () => {
-    const generateId: KeyGenerator<number> = (maxId) =>
+    const generateId: History.KeyGenerator<number> = (maxId) =>
         ((maxId as number) ?? 0) + 1;
 
     it("should return correct age for all items in various orders", () => {
