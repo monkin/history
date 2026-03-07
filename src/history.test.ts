@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { History } from "./history.ts";
-import { List } from "./list.ts";
+import { CompareResult, emptyList, insert } from "./sorted-list.ts";
 
 interface MyEntry extends History.Entry<number, string> {
     id: number;
@@ -22,8 +22,16 @@ describe("History", () => {
         const item2 = createItem(2, 1);
         const item3 = createItem(3, 2);
 
-        let list = new List<MyEntry>([], undefined);
-        list = list.insert(item1).insert(item2).insert(item3);
+        const compare = (a: MyEntry, b: MyEntry) => {
+            if (a.id < b.id) return CompareResult.Greater;
+            if (a.id > b.id) return CompareResult.Less;
+            return CompareResult.Equal;
+        };
+
+        let list = emptyList as any;
+        list = insert(list, item1, compare);
+        list = insert(list, item2, compare);
+        list = insert(list, item3, compare);
 
         const generateId: History.IdGenerator<number> = (maxId) =>
             ((maxId as number) ?? 0) + 1;
@@ -40,8 +48,16 @@ describe("History", () => {
         const item2 = createItem(2, 1);
         const item3 = createItem(3, 2);
 
-        let list = new List<MyEntry>([], undefined);
-        list = list.insert(item1).insert(item2).insert(item3);
+        const compare = (a: MyEntry, b: MyEntry) => {
+            if (a.id < b.id) return CompareResult.Greater;
+            if (a.id > b.id) return CompareResult.Less;
+            return CompareResult.Equal;
+        };
+
+        let list = emptyList as any;
+        list = insert(list, item1, compare);
+        list = insert(list, item2, compare);
+        list = insert(list, item3, compare);
 
         const generateId: History.IdGenerator<number> = (maxId) =>
             ((maxId as number) ?? 0) + 1;
@@ -54,8 +70,12 @@ describe("History", () => {
 
     it("should return empty if current is undefined", () => {
         const item1 = createItem(1);
-        let list = new List<MyEntry>([], undefined);
-        list = list.insert(item1);
+        const compare = (a: MyEntry, b: MyEntry) => {
+            if (a.id < b.id) return CompareResult.Greater;
+            if (a.id > b.id) return CompareResult.Less;
+            return CompareResult.Equal;
+        };
+        const list = insert(emptyList as any, item1, compare);
 
         const generateId: History.IdGenerator<number> = (maxId) =>
             ((maxId as number) ?? 0) + 1;
@@ -76,7 +96,7 @@ describe("History", () => {
     describe("add", () => {
         it("should add a new value and update current", () => {
             let history = new History<number, string>(
-                new List([], undefined),
+                emptyList as any,
                 undefined,
                 generateId,
             );
@@ -99,7 +119,7 @@ describe("History", () => {
     describe("all", () => {
         it("should return all items in the history", () => {
             let history = new History<number, string>(
-                new List([], undefined),
+                emptyList as any,
                 undefined,
                 generateId,
             );
@@ -117,7 +137,7 @@ describe("History", () => {
 
         it("should return all items even after undo", () => {
             let history = new History<number, string>(
-                new List([], undefined),
+                emptyList as any,
                 undefined,
                 generateId,
             );
@@ -136,7 +156,7 @@ describe("History", () => {
 
         it("should return an empty array for an empty history", () => {
             const history = new History<number, string>(
-                new List([], undefined),
+                emptyList as any,
                 undefined,
                 generateId,
             );
@@ -149,7 +169,7 @@ describe("History", () => {
     describe("undo and redo", () => {
         it("should handle basic undo and redo", () => {
             let history = new History<number, string>(
-                new List([], undefined),
+                emptyList as any,
                 undefined,
                 generateId,
             );

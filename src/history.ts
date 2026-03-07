@@ -1,5 +1,13 @@
 import { ageOf } from "./age-cache.ts";
-import { List } from "./list";
+import {
+    CompareResult,
+    emptyList,
+    getItem,
+    insert,
+    insertAll,
+    iterate,
+    type SortedList,
+} from "./sorted-list";
 
 /**
  * Read-only history of values.
@@ -17,7 +25,7 @@ export class History<Id extends string | number, Operation> {
     /** @internal */
     constructor(
         /** @internal */
-        readonly items: List<History.Entry<Id, Operation>>,
+        readonly items: SortedList<History.Entry<Id, Operation>>,
         /**
          * Pointer to the current entry in the history.
          * It can be moved by undo/redo.
@@ -30,6 +38,11 @@ export class History<Id extends string | number, Operation> {
          */
         readonly generateId: History.IdGenerator<Id>,
     ) {}
+
+    private get maxId(): Id | undefined {
+        return (this.items.items[0] as History.Entry<Id, Operation> | undefined)
+            ?.id;
+    }
 
     /**
      * Calculates the age position of an element identified by the given id within a collection.
@@ -47,7 +60,7 @@ export class History<Id extends string | number, Operation> {
      */
     upload(items: History.Entry<Id, Operation>[]): History<Id, Operation> {
         return new History(
-            this.items.insertAll(items),
+            insertAll(this.items, items, compareEntries),
             this.current,
             this.generateId,
         );
@@ -58,18 +71,18 @@ export class History<Id extends string | number, Operation> {
     }
 
     get canRedo(): boolean {
-        return this.items.maxId !== this.current;
+        return this.maxId !== this.current;
     }
 
     /**
      * Add a new value to the history.
      */
     add(value: Operation): History<Id, Operation> {
-        const { items, current, generateId } = this;
+        const { items, current, generateId, maxId } = this;
 
-        const id = generateId(items.maxId);
+        const id = generateId(maxId);
         return new History(
-            items.insert({ id, value, previous: current }),
+            insert(items, { id, value, previous: current }, compareEntries),
             id,
             generateId,
         );
@@ -82,18 +95,17 @@ export class History<Id extends string | number, Operation> {
 
         return new History(
             items,
-            current && items.get(current)?.previous,
+            current && getItem(items, lookupById(current))?.previous,
             generateId,
         );
     }
 
     redo(): History<Id, Operation> {
-        const { items, current, generateId } = this;
-        const { maxId } = items;
+        const { items, current, generateId, maxId } = this;
 
         if (current === maxId || maxId === undefined) return this;
 
-        for (const item of items.iterate(maxId)) {
+        for (const item of this.iterate(maxId)) {
             if (item.previous === current) {
                 return new History(items, item.id, generateId);
             }
@@ -106,7 +118,7 @@ export class History<Id extends string | number, Operation> {
      * Retrieves a generator that yields all (undone too) items in the history.
      */
     *all(): Generator<History.Entry<Id, Operation>> {
-        return yield* this.items;
+        return yield* iterate(this.items);
     }
 
     /**
@@ -115,13 +127,38 @@ export class History<Id extends string | number, Operation> {
      * To iterate over all values, use `for (const item of history.all()) { ... }` instead.
      */
     [Symbol.iterator](): Generator<History.Entry<Id, Operation>> {
-        return this.items.iterate(this.current);
+        return this.iterate(this.current);
+    }
+
+    private *iterate(
+        startFrom: Id | undefined,
+    ): Generator<History.Entry<Id, Operation>> {
+        if (startFrom === undefined) return;
+
+        let lookingFor: Id | undefined = startFrom;
+        for (const item of iterate(this.items)) {
+            const { id, previous } = item;
+            if (id === lookingFor) {
+                yield item;
+                if (previous !== undefined) {
+                    lookingFor = previous;
+                } else {
+                    break;
+                }
+            } else if (id < lookingFor) {
+                break;
+            }
+        }
     }
 
     static empty<Id extends string | number, Value>(
         generateId: History.IdGenerator<Id>,
     ): History<Id, Value> {
-        return new History(new List([], undefined), undefined, generateId);
+        return new History(
+            emptyList as SortedList<History.Entry<Id, Value>>,
+            undefined,
+            generateId,
+        );
     }
 
     static fromItems<Id extends string | number, Value>(
@@ -130,12 +167,33 @@ export class History<Id extends string | number, Operation> {
         generateId: History.IdGenerator<Id>,
     ): History<Id, Value> {
         return new History(
-            new List<History.Entry<Id, Value>>([], undefined).insertAll(items),
+            insertAll(
+                emptyList as SortedList<History.Entry<Id, Value>>,
+                items,
+                compareEntries,
+            ),
             current,
             generateId,
         );
     }
 }
+
+const compareEntries = (
+    a: History.Entry<any, any>,
+    b: History.Entry<any, any>,
+): CompareResult => {
+    if (a.id < b.id) return CompareResult.Greater;
+    if (a.id > b.id) return CompareResult.Less;
+    return CompareResult.Equal;
+};
+
+const lookupById =
+    <Id extends string | number>(id: Id) =>
+    (entry: History.Entry<Id, unknown>): CompareResult => {
+        if (id < entry.id) return CompareResult.Greater;
+        if (id > entry.id) return CompareResult.Less;
+        return CompareResult.Equal;
+    };
 
 export namespace History {
     /**
