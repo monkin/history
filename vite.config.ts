@@ -14,11 +14,5 @@ export default defineConfig({
             fileName: (format) => `history.${format === "es" ? "js" : "cjs"}`,
         },
         minify: "terser",
-        rollupOptions: {
-            external: [],
-            output: {
-                globals: {},
-            },
-        },
     },
 });
