@@ -4,58 +4,65 @@ import type { History } from "./history.ts";
 /**
  * @internal
  */
-export class AgeCache<Key extends string | number> {
+interface CacheState<Key extends string | number> {
     // last key received from iterator
-    private minId: Key | undefined = undefined;
+    minId: Key | undefined;
     // every next key will receive `lastAge + 1`
-    private lastAge = 0;
+    lastAge: number;
 
-    private readonly cache: Map<Key, number> = new Map();
+    readonly cache: Map<Key, number>;
 
     // iterator is finished
-    private done = false;
+    done: boolean;
 
-    private constructor(
-        private readonly iterator: Iterator<Entry<Key, unknown>>,
-    ) {}
+    readonly iterator: Iterator<Entry<Key, unknown>>;
+}
 
-    get(key: Key): number | undefined {
-        const cached = this.cache.get(key);
-        if (cached !== undefined) return cached;
+const caches = new WeakMap<History<any, unknown>, CacheState<any>>();
 
-        if (this.done || (this.minId !== undefined && this.minId < key)) {
-            return undefined;
-        }
+/**
+ * @internal
+ */
+export function ageOf<Key extends string | number>(
+    history: History<Key, unknown>,
+    id: Key,
+): number | undefined {
+    let state = caches.get(history);
+    if (state === undefined) {
+        state = {
+            minId: undefined,
+            lastAge: 0,
+            cache: new Map(),
+            done: false,
+            iterator: history[Symbol.iterator](),
+        };
+        caches.set(history, state);
+    }
 
-        for (let i = this.iterator.next(); !i.done; i = this.iterator.next()) {
-            const age = this.lastAge;
-            const itemId = i.value.id;
-            this.lastAge++;
-            this.minId = itemId;
+    const cached = state.cache.get(id);
+    if (cached !== undefined) return cached;
 
-            this.cache.set(itemId, age);
-
-            if (itemId === key) {
-                return age;
-            }
-
-            if (itemId < key) {
-                return undefined;
-            }
-        }
-
-        this.done = true;
+    if (state.done || (state.minId !== undefined && state.minId < id)) {
         return undefined;
     }
 
-    static cache = new WeakMap<History<any, unknown>, AgeCache<any>>();
+    for (let i = state.iterator.next(); !i.done; i = state.iterator.next()) {
+        const age = state.lastAge;
+        const itemId = i.value.id;
+        state.lastAge++;
+        state.minId = itemId;
 
-    static get<K extends string | number>(history: History<K, unknown>) {
-        const cached = AgeCache.cache.get(history);
-        if (cached !== undefined) return cached;
+        state.cache.set(itemId, age);
 
-        const instance = new AgeCache(history[Symbol.iterator]());
-        AgeCache.cache.set(history, instance);
-        return instance;
+        if (itemId === id) {
+            return age;
+        }
+
+        if (itemId < id) {
+            return undefined;
+        }
     }
+
+    state.done = true;
+    return undefined;
 }
