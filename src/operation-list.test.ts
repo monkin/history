@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { History } from "./history.ts";
+import { OperationList } from "./operation-list.ts";
 import { Comparison, emptyList, insert } from "./sorted-list.ts";
 
-interface MyEntry extends History.Entry<number, string> {
+interface MyEntry extends OperationList.Entry<number, string> {
     id: number;
     previous: number | undefined;
     generation: number;
@@ -18,7 +18,7 @@ function createItem(
     return { id, previous, operation, generation };
 }
 
-describe("History", () => {
+describe("OperationList", () => {
     it("should iterate through history starting from current", () => {
         const item1 = createItem(1);
         const item2 = createItem(2, 1);
@@ -35,10 +35,10 @@ describe("History", () => {
         list = insert(list, item2, compare);
         list = insert(list, item3, compare);
 
-        const generateId: History.IdGenerator<number> = (maxId) =>
+        const generateId: OperationList.IdGenerator<number> = (maxId) =>
             ((maxId as number) ?? 0) + 1;
 
-        const history = new History<number, string>(list, 2, generateId);
+        const history = new OperationList<number, string>(list, 2, generateId);
 
         // Current is 2, so it should iterate 2 -> 1
         const iterated = Array.from(history);
@@ -61,10 +61,10 @@ describe("History", () => {
         list = insert(list, item2, compare);
         list = insert(list, item3, compare);
 
-        const generateId: History.IdGenerator<number> = (maxId) =>
+        const generateId: OperationList.IdGenerator<number> = (maxId) =>
             ((maxId as number) ?? 0) + 1;
 
-        const history = new History<number, string>(list, 3, generateId);
+        const history = new OperationList<number, string>(list, 3, generateId);
 
         const iterated = Array.from(history);
         expect(iterated).toEqual([item3, item2, item1]);
@@ -79,10 +79,10 @@ describe("History", () => {
         };
         const list = insert(emptyList as any, item1, compare);
 
-        const generateId: History.IdGenerator<number> = (maxId) =>
+        const generateId: OperationList.IdGenerator<number> = (maxId) =>
             ((maxId as number) ?? 0) + 1;
 
-        const history = new History<number, string>(
+        const history = new OperationList<number, string>(
             list,
             undefined,
             generateId,
@@ -92,12 +92,12 @@ describe("History", () => {
         expect(iterated).toEqual([]);
     });
 
-    const generateId: History.IdGenerator<number> = (maxId) =>
+    const generateId: OperationList.IdGenerator<number> = (maxId) =>
         ((maxId as number) ?? 0) + 1;
 
     describe("add", () => {
         it("should add a new operation and update current", () => {
-            let history = new History<number, string>(
+            let history = new OperationList<number, string>(
                 emptyList as any,
                 undefined,
                 generateId,
@@ -120,7 +120,7 @@ describe("History", () => {
 
     describe("entries", () => {
         it("should return entries items in the history", () => {
-            let history = new History<number, string>(
+            let history = new OperationList<number, string>(
                 emptyList as any,
                 undefined,
                 generateId,
@@ -138,7 +138,7 @@ describe("History", () => {
         });
 
         it("should return entries items even after undo", () => {
-            let history = new History<number, string>(
+            let history = new OperationList<number, string>(
                 emptyList as any,
                 undefined,
                 generateId,
@@ -157,7 +157,7 @@ describe("History", () => {
         });
 
         it("should return an empty array for an empty history", () => {
-            const history = new History<number, string>(
+            const history = new OperationList<number, string>(
                 emptyList as any,
                 undefined,
                 generateId,
@@ -170,7 +170,7 @@ describe("History", () => {
 
     describe("undo and redo", () => {
         it("should handle basic undo and redo", () => {
-            let history = new History<number, string>(
+            let history = new OperationList<number, string>(
                 emptyList as any,
                 undefined,
                 generateId,
@@ -206,7 +206,7 @@ describe("History", () => {
 
     describe("empty", () => {
         it("should create an empty history", () => {
-            const history = History.empty<number, string>(generateId);
+            const history = OperationList.empty<number, string>(generateId);
 
             expect(history.current).toBeUndefined();
             expect(history.canUndo).toBe(false);
@@ -218,7 +218,7 @@ describe("History", () => {
 
     describe("upload", () => {
         it("should upload missing older items", () => {
-            let history = History.empty<number, string>(generateId);
+            let history = OperationList.empty<number, string>(generateId);
             const item1 = {
                 id: 1,
                 operation: "op1",
@@ -250,7 +250,7 @@ describe("History", () => {
         });
 
         it("should allow replacing existing items including current", () => {
-            let history = History.empty<number, string>(generateId);
+            let history = OperationList.empty<number, string>(generateId);
             history = history.add("op1"); // ID 1, current 1
 
             const updatedItem = {
@@ -288,7 +288,7 @@ describe("History", () => {
             };
             const items = [item1, item2, item3];
 
-            const history = History.fromItems<number, string>(
+            const history = OperationList.fromItems<number, string>(
                 2,
                 items,
                 generateId,
@@ -304,7 +304,7 @@ describe("History", () => {
         });
 
         it("should handle empty items", () => {
-            const history = History.fromItems<number, string>(
+            const history = OperationList.fromItems<number, string>(
                 undefined,
                 [],
                 generateId,
@@ -336,7 +336,7 @@ describe("History", () => {
             };
             const items = [item3, item1, item2]; // out of order
 
-            const history = History.fromItems<number, string>(
+            const history = OperationList.fromItems<number, string>(
                 3,
                 items,
                 generateId,

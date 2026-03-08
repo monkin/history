@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { History } from "./history.ts";
+import { OperationList } from "./operation-list.ts";
 
-describe("History.ageOf reproduction", () => {
-    const generateId: History.IdGenerator<number> = (maxId) =>
+describe("OperationList.ageOf reproduction", () => {
+    const generateId: OperationList.IdGenerator<number> = (maxId) =>
         ((maxId as number) ?? 0) + 1;
 
     it("should return correct age for entries items in various orders", () => {
-        let history = History.empty<number, string>(generateId);
+        let history = OperationList.empty<number, string>(generateId);
         history = history.add("op1").add("op2").add("op3");
 
         // op3 is id 3, op2 is id 2, op1 is id 1
@@ -24,7 +24,7 @@ describe("History.ageOf reproduction", () => {
     });
 
     it("should handle undo and redo correctly for ageOf", () => {
-        let history = History.empty<number, string>(generateId);
+        let history = OperationList.empty<number, string>(generateId);
         history = history.add("op1").add("op2").add("op3");
 
         history = history.undo();
@@ -44,7 +44,7 @@ describe("History.ageOf reproduction", () => {
     });
 
     it("should handle larger history (multi-chunk)", () => {
-        let history = History.empty<number, string>(generateId);
+        let history = OperationList.empty<number, string>(generateId);
         for (let i = 1; i <= 100; i++) {
             history = history.add(`op${i}`);
         }
@@ -56,7 +56,7 @@ describe("History.ageOf reproduction", () => {
     });
 
     it("should handle history with branches (after undo and add)", () => {
-        let history = History.empty<number, string>(generateId);
+        let history = OperationList.empty<number, string>(generateId);
         history = history.add("op1").add("op2").add("op3");
 
         history = history.undo().undo(); // current is 1
@@ -81,7 +81,7 @@ describe("History.ageOf reproduction", () => {
     });
 
     it("should return correct age after multiple undo/redo combinations", () => {
-        let history = History.empty<number, string>(generateId);
+        let history = OperationList.empty<number, string>(generateId);
         history = history.add("1").add("2").add("3").add("4").add("5");
 
         history = history.undo().undo(); // current is 3

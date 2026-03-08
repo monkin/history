@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { History } from "./history.ts";
+import { OperationList } from "./operation-list.ts";
 
-describe("History generation", () => {
-    const generateId: History.IdGenerator<number> = (maxId) =>
+describe("OperationList generation", () => {
+    const generateId: OperationList.IdGenerator<number> = (maxId) =>
         ((maxId as number) ?? 0) + 1;
 
     it("should set generation to 0 for the first entry", () => {
-        let history = History.empty<number, string>(generateId);
+        let history = OperationList.empty<number, string>(generateId);
         history = history.add("op1");
 
         const entry = history.get(1);
@@ -14,7 +14,7 @@ describe("History generation", () => {
     });
 
     it("should increment generation for subsequent entries", () => {
-        let history = History.empty<number, string>(generateId);
+        let history = OperationList.empty<number, string>(generateId);
         history = history.add("op1").add("op2").add("op3");
 
         expect(history.get(1)?.generation).toBe(0);
@@ -23,7 +23,7 @@ describe("History generation", () => {
     });
 
     it("should correctly calculate generation after undo and branch", () => {
-        let history = History.empty<number, string>(generateId);
+        let history = OperationList.empty<number, string>(generateId);
         history = history.add("op1").add("op2"); // 1(gen 0), 2(gen 1)
 
         history = history.undo(); // current is 1

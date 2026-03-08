@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { History } from "./history.ts";
+import { OperationList } from "./operation-list.ts";
 
-describe("History.entry", () => {
-    const generateId: History.IdGenerator<number> = (maxId) =>
+describe("OperationList.entry", () => {
+    const generateId: OperationList.IdGenerator<number> = (maxId) =>
         ((maxId as number) ?? 0) + 1;
 
     it("should return any entry by id even if undone", () => {
-        let history = History.empty<number, string>(generateId);
+        let history = OperationList.empty<number, string>(generateId);
         history = history.add("op1").add("op2").add("op3");
 
         history = history.undo();
@@ -35,7 +35,7 @@ describe("History.entry", () => {
     });
 
     it("should return undefined for non-existent entries", () => {
-        let history = History.empty<number, string>(generateId);
+        let history = OperationList.empty<number, string>(generateId);
         history = history.add("op1");
 
         expect(history.entry(2)).toBeUndefined();
@@ -43,12 +43,12 @@ describe("History.entry", () => {
     });
 });
 
-describe("History.entries", () => {
-    const generateId: History.IdGenerator<number> = (maxId) =>
+describe("OperationList.entries", () => {
+    const generateId: OperationList.IdGenerator<number> = (maxId) =>
         ((maxId as number) ?? 0) + 1;
 
     it("should yield all entries in history", () => {
-        let history = History.empty<number, string>(generateId);
+        let history = OperationList.empty<number, string>(generateId);
         history = history.add("op1").add("op2").add("op3");
 
         history = history.undo();

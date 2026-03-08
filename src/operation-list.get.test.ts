@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { History } from "./history.ts";
+import { OperationList } from "./operation-list.ts";
 
-describe("History.get", () => {
-    const generateId: History.IdGenerator<number> = (maxId) =>
+describe("OperationList.get", () => {
+    const generateId: OperationList.IdGenerator<number> = (maxId) =>
         ((maxId as number) ?? 0) + 1;
 
     it("should return correct entry for entries items in various orders", () => {
-        let history = History.empty<number, string>(generateId);
+        let history = OperationList.empty<number, string>(generateId);
         history = history.add("op1").add("op2").add("op3");
 
         // op3:id 3, op2:id 2, op1:id 1
@@ -34,7 +34,7 @@ describe("History.get", () => {
     });
 
     it("should return undefined for non-existent items", () => {
-        let history = History.empty<number, string>(generateId);
+        let history = OperationList.empty<number, string>(generateId);
         history = history.add("op1");
 
         expect(history.get(2)).toBeUndefined();
@@ -42,7 +42,7 @@ describe("History.get", () => {
     });
 
     it("should handle undo correctly for get", () => {
-        let history = History.empty<number, string>(generateId);
+        let history = OperationList.empty<number, string>(generateId);
         history = history.add("op1").add("op2").add("op3");
 
         history = history.undo();

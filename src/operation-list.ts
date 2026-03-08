@@ -10,10 +10,10 @@ import {
 } from "./sorted-list";
 
 /**
- * Read-only history of operations.
+ * Read-only operation list of operations.
  *
  * It contains a linked list of operations with references to the previous one.
- * Operation can be added to the history but cannot be removed.
+ * Operation can be added to the operation list but cannot be removed.
  *
  * Undo/redo are implemented by moving the `current` operation pointer.
  *
@@ -21,13 +21,13 @@ import {
  * (resizing while mouse moving, for example) should be stored outside until the
  * operation is finished ('mouseup' in case of resizing).
  */
-export class History<Id extends string | number, Operation> {
+export class OperationList<Id extends string | number, Operation> {
     /** @internal */
     constructor(
         /** @internal */
-        readonly items: SortedList<History.Entry<Id, Operation>>,
+        readonly items: SortedList<OperationList.Entry<Id, Operation>>,
         /**
-         * Pointer to the current entry in the history.
+         * Pointer to the current entry in the operation list.
          * It can be moved by undo/redo.
          *
          * @internal
@@ -35,12 +35,12 @@ export class History<Id extends string | number, Operation> {
         readonly current: Id | undefined,
         /**
          * Function to generate a new unique id for an entry.
-         * It receives the biggest Id in the history if any.
+         * It receives the biggest Id in the operation list if any.
          * The generated id should be bigger than the provided one.
          *
          * @internal
          */
-        readonly generateId: History.IdGenerator<Id>,
+        readonly generateId: OperationList.IdGenerator<Id>,
     ) {}
 
     /**
@@ -54,7 +54,7 @@ export class History<Id extends string | number, Operation> {
      * Get the entry with the given id if it's reachable from the current state.
      * If the item is undone and not present in the current branch returns undefined.
      */
-    get(id: Id): History.Entry<Id, Operation> | undefined {
+    get(id: Id): OperationList.Entry<Id, Operation> | undefined {
         return lookup(this, id);
     }
 
@@ -73,7 +73,7 @@ export class History<Id extends string | number, Operation> {
     /**
      * Get the entry with the given id, even if it's undone.
      */
-    entry(id: Id): History.Entry<Id, Operation> | undefined {
+    entry(id: Id): OperationList.Entry<Id, Operation> | undefined {
         return getItem(this.items, lookupById(id));
     }
 
@@ -96,12 +96,12 @@ export class History<Id extends string | number, Operation> {
     }
 
     /**
-     * Upload a list of items to the history.
-     * This operation should be used for partial history loading.
+     * Upload a list of items to the operation list.
+     * This operation should be used for partial operation list loading.
      * It won't change `current`, since it uploads older item.
      */
-    upload(items: History.Entry<Id, Operation>[]): History<Id, Operation> {
-        return new History(
+    upload(items: OperationList.Entry<Id, Operation>[]): OperationList<Id, Operation> {
+        return new OperationList(
             insertAll(this.items, items, compareEntries),
             this.current,
             this.generateId,
@@ -117,9 +117,9 @@ export class History<Id extends string | number, Operation> {
     }
 
     /**
-     * Add a new operation to the history.
+     * Add a new operation to the operation list.
      */
-    add(operation: Operation): History<Id, Operation> {
+    add(operation: Operation): OperationList<Id, Operation> {
         const { items, current, generateId, maxId } = this;
 
         const id = generateId(maxId);
@@ -127,7 +127,7 @@ export class History<Id extends string | number, Operation> {
             current !== undefined
                 ? (this.get(current)?.generation ?? 0) + 1
                 : 0;
-        return new History(
+        return new OperationList(
             insert(
                 items,
                 { id, operation, previous: current, generation },
@@ -138,26 +138,26 @@ export class History<Id extends string | number, Operation> {
         );
     }
 
-    undo(): History<Id, Operation> {
+    undo(): OperationList<Id, Operation> {
         const { items, current, generateId } = this;
 
         if (current === undefined) return this;
 
-        return new History(
+        return new OperationList(
             items,
             current && getItem(items, lookupById(current))?.previous,
             generateId,
         );
     }
 
-    redo(): History<Id, Operation> {
+    redo(): OperationList<Id, Operation> {
         const { items, current, generateId, maxId } = this;
 
         if (current === maxId || maxId === undefined) return this;
 
         for (const item of this.iterate(maxId)) {
             if (item.previous === current) {
-                return new History(items, item.id, generateId);
+                return new OperationList(items, item.id, generateId);
             }
         }
 
@@ -165,24 +165,24 @@ export class History<Id extends string | number, Operation> {
     }
 
     /**
-     * Retrieves a generator that yields all (including undone) entries in the history.
+     * Retrieves a generator that yields all (including undone) entries in the operation list.
      */
-    *entries(): Generator<History.Entry<Id, Operation>> {
+    *entries(): Generator<OperationList.Entry<Id, Operation>> {
         return yield* iterate(this.items);
     }
 
     /**
-     * Iterate over history. Undone operations are skipped.
+     * Iterate over operation list. Undone operations are skipped.
      *
-     * To iterate over all operations, use `for (const item of history.entries()) { ... }` instead.
+     * To iterate over all operations, use `for (const item of operationList.entries()) { ... }` instead.
      */
-    [Symbol.iterator](): Generator<History.Entry<Id, Operation>> {
+    [Symbol.iterator](): Generator<OperationList.Entry<Id, Operation>> {
         return this.iterate(this.current);
     }
 
     private *iterate(
         startFrom: Id | undefined,
-    ): Generator<History.Entry<Id, Operation>> {
+    ): Generator<OperationList.Entry<Id, Operation>> {
         if (startFrom === undefined) return;
 
         let lookingFor: Id | undefined = startFrom;
@@ -202,17 +202,17 @@ export class History<Id extends string | number, Operation> {
     }
 
     static empty<Id extends string | number, Operation>(
-        generateId: History.IdGenerator<Id>,
-    ): History<Id, Operation> {
-        return new History(emptyList, undefined, generateId);
+        generateId: OperationList.IdGenerator<Id>,
+    ): OperationList<Id, Operation> {
+        return new OperationList(emptyList, undefined, generateId);
     }
 
     static fromItems<Id extends string | number, Operation>(
         current: Id | undefined,
-        items: History.Entry<Id, Operation>[],
-        generateId: History.IdGenerator<Id>,
-    ): History<Id, Operation> {
-        return new History(
+        items: OperationList.Entry<Id, Operation>[],
+        generateId: OperationList.IdGenerator<Id>,
+    ): OperationList<Id, Operation> {
+        return new OperationList(
             insertAll(emptyList, items, compareEntries),
             current,
             generateId,
@@ -221,8 +221,8 @@ export class History<Id extends string | number, Operation> {
 }
 
 const compareEntries = (
-    a: History.Entry<any, any>,
-    b: History.Entry<any, any>,
+    a: OperationList.Entry<any, any>,
+    b: OperationList.Entry<any, any>,
 ): Comparison => {
     if (a.id < b.id) return Comparison.Greater;
     if (a.id > b.id) return Comparison.Less;
@@ -231,15 +231,15 @@ const compareEntries = (
 
 const lookupById =
     <Id extends string | number>(id: Id) =>
-    (entry: History.Entry<Id, unknown>): Comparison => {
+    (entry: OperationList.Entry<Id, unknown>): Comparison => {
         if (id < entry.id) return Comparison.Greater;
         if (id > entry.id) return Comparison.Less;
         return Comparison.Equal;
     };
 
-export namespace History {
+export namespace OperationList {
     /**
-     * Entry of the history.
+     * Entry of the operation list.
      *
      * Each entry has a unique id and a reference to the previous one.
      */
@@ -262,8 +262,8 @@ export namespace History {
         T["operation"];
 
     /**
-     * Generate a new id for the history.
-     * @param maxId The biggest id in the history, or undefined if the history is empty.
+     * Generate a new id for the operation list.
+     * @param maxId The biggest id in the operation list, or undefined if the operation list is empty.
      * @returns A new id. It must be bigger than the provided one.
      */
     export type IdGenerator<Id extends string | number> = (
