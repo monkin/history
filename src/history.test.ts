@@ -219,9 +219,24 @@ describe("History", () => {
     describe("upload", () => {
         it("should upload missing older items", () => {
             let history = History.empty<number, string>(generateId);
-            const item1 = { id: 1, operation: "op1", previous: undefined };
-            const item2 = { id: 2, operation: "op2", previous: 1 };
-            const item3 = { id: 3, operation: "op3", previous: 2 };
+            const item1 = {
+                id: 1,
+                operation: "op1",
+                previous: undefined,
+                generation: 0,
+            };
+            const item2 = {
+                id: 2,
+                operation: "op2",
+                previous: 1,
+                generation: 1,
+            };
+            const item3 = {
+                id: 3,
+                operation: "op3",
+                previous: 2,
+                generation: 2,
+            };
 
             history = history.upload([item3]);
             expect(history.current).toBeUndefined();
@@ -238,6 +253,7 @@ describe("History", () => {
                 id: 1,
                 operation: "updated op1",
                 previous: undefined,
+                generation: 0,
             };
             history = history.upload([updatedItem]);
 
@@ -248,9 +264,24 @@ describe("History", () => {
 
     describe("fromItems", () => {
         it("should create history from items and current pointer", () => {
-            const item1 = { id: 1, operation: "op1", previous: undefined };
-            const item2 = { id: 2, operation: "op2", previous: 1 };
-            const item3 = { id: 3, operation: "op3", previous: 2 };
+            const item1 = {
+                id: 1,
+                operation: "op1",
+                previous: undefined,
+                generation: 0,
+            };
+            const item2 = {
+                id: 2,
+                operation: "op2",
+                previous: 1,
+                generation: 1,
+            };
+            const item3 = {
+                id: 3,
+                operation: "op3",
+                previous: 2,
+                generation: 2,
+            };
             const items = [item1, item2, item3];
 
             const history = History.fromItems<number, string>(
@@ -277,9 +308,24 @@ describe("History", () => {
         });
 
         it("should handle out-of-order items", () => {
-            const item1 = { id: 1, operation: "op1", previous: undefined };
-            const item2 = { id: 2, operation: "op2", previous: 1 };
-            const item3 = { id: 3, operation: "op3", previous: 2 };
+            const item1 = {
+                id: 1,
+                operation: "op1",
+                previous: undefined,
+                generation: 0,
+            };
+            const item2 = {
+                id: 2,
+                operation: "op2",
+                previous: 1,
+                generation: 1,
+            };
+            const item3 = {
+                id: 3,
+                operation: "op3",
+                previous: 2,
+                generation: 2,
+            };
             const items = [item3, item1, item2]; // out of order
 
             const history = History.fromItems<number, string>(
