@@ -5,15 +5,17 @@ import { Comparison, emptyList, insert } from "./sorted-list.ts";
 interface MyEntry extends History.Entry<number, string> {
     id: number;
     previous: number | undefined;
+    generation: number;
     operation: string;
 }
 
 function createItem(
     id: number,
     previous?: number,
+    generation: number = 0,
     operation: string = "test",
 ): MyEntry {
-    return { id, previous, operation };
+    return { id, previous, operation, generation };
 }
 
 describe("History", () => {
@@ -104,14 +106,14 @@ describe("History", () => {
             history = history.add("op1");
             expect(history.current).toBe(1);
             expect(Array.from(history)).toEqual([
-                { id: 1, operation: "op1", previous: undefined },
+                { id: 1, operation: "op1", previous: undefined, generation: 0 },
             ]);
 
             history = history.add("op2");
             expect(history.current).toBe(2);
             expect(Array.from(history)).toEqual([
-                { id: 2, operation: "op2", previous: 1 },
-                { id: 1, operation: "op1", previous: undefined },
+                { id: 2, operation: "op2", previous: 1, generation: 1 },
+                { id: 1, operation: "op1", previous: undefined, generation: 0 },
             ]);
         });
     });
@@ -129,9 +131,9 @@ describe("History", () => {
 
             const all = Array.from(history.all());
             expect(all).toEqual([
-                { id: 3, operation: "op3", previous: 2 },
-                { id: 2, operation: "op2", previous: 1 },
-                { id: 1, operation: "op1", previous: undefined },
+                { id: 3, operation: "op3", previous: 2, generation: 2 },
+                { id: 2, operation: "op2", previous: 1, generation: 1 },
+                { id: 1, operation: "op1", previous: undefined, generation: 0 },
             ]);
         });
 
@@ -148,9 +150,9 @@ describe("History", () => {
 
             const all = Array.from(history.all());
             expect(all).toEqual([
-                { id: 3, operation: "op3", previous: 2 },
-                { id: 2, operation: "op2", previous: 1 },
-                { id: 1, operation: "op1", previous: undefined },
+                { id: 3, operation: "op3", previous: 2, generation: 2 },
+                { id: 2, operation: "op2", previous: 1, generation: 1 },
+                { id: 1, operation: "op1", previous: undefined, generation: 0 },
             ]);
         });
 
@@ -180,7 +182,7 @@ describe("History", () => {
             history = history.undo();
             expect(history.current).toBe(1);
             expect(Array.from(history)).toEqual([
-                { id: 1, operation: "op1", previous: undefined },
+                { id: 1, operation: "op1", previous: undefined, generation: 0 },
             ]);
 
             history = history.undo();
@@ -190,14 +192,14 @@ describe("History", () => {
             history = history.redo();
             expect(history.current).toBe(1);
             expect(Array.from(history)).toEqual([
-                { id: 1, operation: "op1", previous: undefined },
+                { id: 1, operation: "op1", previous: undefined, generation: 0 },
             ]);
 
             history = history.redo();
             expect(history.current).toBe(2);
             expect(Array.from(history)).toEqual([
-                { id: 2, operation: "op2", previous: 1 },
-                { id: 1, operation: "op1", previous: undefined },
+                { id: 2, operation: "op2", previous: 1, generation: 1 },
+                { id: 1, operation: "op1", previous: undefined, generation: 0 },
             ]);
         });
     });

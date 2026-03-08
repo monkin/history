@@ -91,8 +91,16 @@ export class History<Id extends string | number, Operation> {
         const { items, current, generateId, maxId } = this;
 
         const id = generateId(maxId);
+        const generation =
+            current !== undefined
+                ? (this.get(current)?.generation ?? 0) + 1
+                : 0;
         return new History(
-            insert(items, { id, operation, previous: current }, compareEntries),
+            insert(
+                items,
+                { id, operation, previous: current, generation },
+                compareEntries,
+            ),
             id,
             generateId,
         );
@@ -206,6 +214,7 @@ export namespace History {
     export interface Entry<Id extends string | number, Operation> {
         readonly id: Id;
         readonly previous: Id | undefined;
+        readonly generation: number;
         readonly operation: Operation;
     }
 
