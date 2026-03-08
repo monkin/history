@@ -1,3 +1,4 @@
+import { lookup } from "./lookup.ts";
 import {
     Comparison,
     emptyList,
@@ -41,6 +42,10 @@ export class SnapshotList<Id extends string | number, Snapshot> {
         return new SnapshotList(
             insertAll(this.items, Array.from(items), compareItems),
         );
+    }
+
+    get(id: Id): SnapshotList.Item<Id, Snapshot> | undefined {
+        return lookup(this, id);
     }
 
     remove(id: Id): SnapshotList<Id, Snapshot> {

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { SnapshotList } from "./snapshot-list.ts";
 
 describe("SnapshotList", () => {
@@ -41,7 +41,7 @@ describe("SnapshotList", () => {
                 { id: 2, snapshot: "two" },
                 { id: 3, snapshot: "three" },
             ])
-            .removeById(2);
+            .remove(2);
         expect([...list]).toEqual([
             { id: 3, snapshot: "three" },
             { id: 1, snapshot: "one" },
@@ -72,7 +72,7 @@ describe("SnapshotList", () => {
     it("should handle removing non-existing id", () => {
         const list = SnapshotList.empty<number, string>()
             .add(1, "one")
-            .removeById(2);
+            .remove(2);
         expect([...list]).toEqual([{ id: 1, snapshot: "one" }]);
     });
 
@@ -93,5 +93,17 @@ describe("SnapshotList", () => {
             { id: "b", snapshot: "banana" },
             { id: "a", snapshot: "apple" },
         ]);
+    });
+
+    it("should get a snapshot by id", () => {
+        const list = SnapshotList.empty<number, string>()
+            .add(1, "one")
+            .add(2, "two")
+            .add(3, "three");
+
+        expect(list.get(2)).toEqual({ id: 2, snapshot: "two" });
+        expect(list.get(1)).toEqual({ id: 1, snapshot: "one" });
+        expect(list.get(3)).toEqual({ id: 3, snapshot: "three" });
+        expect(list.get(4)).toBeUndefined();
     });
 });

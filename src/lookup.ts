@@ -1,38 +1,36 @@
-import type { History } from "./history.ts";
-
-interface CacheState<Id extends string | number, Operation> {
+interface CacheState<Id extends string | number, T extends { id: Id }> {
     // smallest id received from iterator
     lastId: Id | undefined;
 
-    readonly cache: Map<Id, History.Entry<Id, Operation>>;
+    readonly cache: Map<Id, T>;
 
     // iterator is finished
     done: boolean;
 
-    readonly iterator: Iterator<History.Entry<Id, Operation>>;
+    readonly iterator: Iterator<T>;
 }
 
-const caches = new WeakMap<History<any, any>, CacheState<any, any>>();
+const caches = new WeakMap<object, CacheState<any, any>>();
 
 /**
- * Find an entry by ID in history.
+ * Find an entry by ID in source.
  *
  * It uses a lazy iterator and caches results to optimize subsequent lookups.
  * @internal
  */
-export function lookup<Id extends string | number, Operation>(
-    history: History<Id, Operation>,
+export function lookup<Id extends string | number, T extends { id: Id }>(
+    source: Iterable<T> & object,
     id: Id,
-): History.Entry<Id, Operation> | undefined {
-    let state = caches.get(history);
+): T | undefined {
+    let state = caches.get(source);
     if (state === undefined) {
         state = {
             lastId: undefined,
             cache: new Map(),
             done: false,
-            iterator: history[Symbol.iterator](),
+            iterator: source[Symbol.iterator](),
         };
-        caches.set(history, state);
+        caches.set(source, state);
     }
 
     const cached = state.cache.get(id);
