@@ -1,23 +1,10 @@
 import type { History } from "./history.ts";
 
-/**
- * @internal
- */
-export interface CachedEntry<Id extends string | number, Operation> {
-    entry: History.Entry<Id, Operation>;
-    age: number;
-}
-
-/**
- * @internal
- */
 interface CacheState<Id extends string | number, Operation> {
-    // last id received from iterator
-    minId: Id | undefined;
-    // every next id will receive `lastAge + 1`
-    lastAge: number;
+    // smallest id received from iterator
+    lastId: Id | undefined;
 
-    readonly cache: Map<Id, CachedEntry<Id, Operation>>;
+    readonly cache: Map<Id, History.Entry<Id, Operation>>;
 
     // iterator is finished
     done: boolean;
@@ -33,12 +20,11 @@ const caches = new WeakMap<History<any, any>, CacheState<any, any>>();
 export function lookup<Id extends string | number, Operation>(
     history: History<Id, Operation>,
     id: Id,
-): CachedEntry<Id, Operation> | undefined {
+): History.Entry<Id, Operation> | undefined {
     let state = caches.get(history);
     if (state === undefined) {
         state = {
-            minId: undefined,
-            lastAge: 0,
+            lastId: undefined,
             cache: new Map(),
             done: false,
             iterator: history[Symbol.iterator](),
@@ -49,22 +35,19 @@ export function lookup<Id extends string | number, Operation>(
     const cached = state.cache.get(id);
     if (cached !== undefined) return cached;
 
-    if (state.done || (state.minId !== undefined && state.minId < id)) {
+    if (state.done || (state.lastId !== undefined && state.lastId < id)) {
         return undefined;
     }
 
     for (let i = state.iterator.next(); !i.done; i = state.iterator.next()) {
-        const age = state.lastAge;
         const entry = i.value;
         const itemId = entry.id;
-        state.lastAge++;
-        state.minId = itemId;
+        state.lastId = itemId;
 
-        const cachedEntry = { entry, age };
-        state.cache.set(itemId, cachedEntry);
+        state.cache.set(itemId, entry);
 
         if (itemId === id) {
-            return cachedEntry;
+            return entry;
         }
 
         if (itemId < id) {

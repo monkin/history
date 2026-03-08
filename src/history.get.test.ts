@@ -13,9 +13,24 @@ describe("History.get", () => {
         // current is 3
         // iteration: 3, 2, 1
 
-        expect(history.get(1)).toEqual({ id: 1, operation: "op1", previous: undefined });
-        expect(history.get(3)).toEqual({ id: 3, operation: "op3", previous: 2 });
-        expect(history.get(2)).toEqual({ id: 2, operation: "op2", previous: 1 });
+        expect(history.get(1)).toEqual({
+            id: 1,
+            operation: "op1",
+            previous: undefined,
+            generation: 0,
+        });
+        expect(history.get(3)).toEqual({
+            id: 3,
+            operation: "op3",
+            previous: 2,
+            generation: 2,
+        });
+        expect(history.get(2)).toEqual({
+            id: 2,
+            operation: "op2",
+            previous: 1,
+            generation: 1,
+        });
     });
 
     it("should return undefined for non-existent items", () => {
@@ -35,13 +50,38 @@ describe("History.get", () => {
         // iteration: 2, 1
 
         expect(history.get(3)).toBeUndefined();
-        expect(history.get(2)).toEqual({ id: 2, operation: "op2", previous: 1 });
-        expect(history.get(1)).toEqual({ id: 1, operation: "op1", previous: undefined });
+        expect(history.get(2)).toEqual({
+            id: 2,
+            operation: "op2",
+            previous: 1,
+            generation: 1,
+        });
+        expect(history.get(1)).toEqual({
+            id: 1,
+            operation: "op1",
+            previous: undefined,
+            generation: 0,
+        });
 
         history = history.redo();
         // current is 3 again.
-        expect(history.get(3)).toEqual({ id: 3, operation: "op3", previous: 2 });
-        expect(history.get(2)).toEqual({ id: 2, operation: "op2", previous: 1 });
-        expect(history.get(1)).toEqual({ id: 1, operation: "op1", previous: undefined });
+        expect(history.get(3)).toEqual({
+            id: 3,
+            operation: "op3",
+            previous: 2,
+            generation: 2,
+        });
+        expect(history.get(2)).toEqual({
+            id: 2,
+            operation: "op2",
+            previous: 1,
+            generation: 1,
+        });
+        expect(history.get(1)).toEqual({
+            id: 1,
+            operation: "op1",
+            previous: undefined,
+            generation: 0,
+        });
     });
 });

@@ -51,7 +51,7 @@ export class History<Id extends string | number, Operation> {
      * If the item undone and do not present in current branch, returns undefined.
      */
     get(id: Id): History.Entry<Id, Operation> | undefined {
-        return lookup(this, id)?.entry;
+        return lookup(this, id);
     }
 
     /**
