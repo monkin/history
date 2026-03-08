@@ -106,4 +106,15 @@ describe("SnapshotList", () => {
         expect(list.get(3)).toEqual({ id: 3, snapshot: "three" });
         expect(list.get(4)).toBeUndefined();
     });
+
+    it("should create from items", () => {
+        const list = SnapshotList.fromItems<number, string>([
+            { id: 1, snapshot: "one" },
+            { id: 2, snapshot: "two" },
+        ]);
+        expect([...list]).toEqual([
+            { id: 2, snapshot: "two" },
+            { id: 1, snapshot: "one" },
+        ]);
+    });
 });

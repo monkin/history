@@ -55,6 +55,6 @@ describe("History.entries", () => {
 
         const entries = Array.from(history.entries());
         expect(entries).toHaveLength(3);
-        expect(entries.map(e => e.operation)).toEqual(["op3", "op2", "op1"]);
+        expect(entries.map((e) => e.operation)).toEqual(["op3", "op2", "op1"]);
     });
 });

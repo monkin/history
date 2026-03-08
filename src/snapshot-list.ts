@@ -27,6 +27,12 @@ export class SnapshotList<Id extends string | number, Snapshot> {
         return new SnapshotList(emptyList);
     }
 
+    static fromItems<Id extends string | number, Snapshot>(
+        items: SnapshotList.Item<Id, Snapshot>[],
+    ): SnapshotList<Id, Snapshot> {
+        return new SnapshotList(insertAll(emptyList, items, compareItems));
+    }
+
     [Symbol.iterator](): IterableIterator<SnapshotList.Item<Id, Snapshot>> {
         return iterate(this.items);
     }
