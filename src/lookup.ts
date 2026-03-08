@@ -3,29 +3,37 @@ import type { History } from "./history.ts";
 /**
  * @internal
  */
-interface CacheState<Id extends string | number> {
+export interface CachedEntry<Id extends string | number, Operation> {
+    entry: History.Entry<Id, Operation>;
+    age: number;
+}
+
+/**
+ * @internal
+ */
+interface CacheState<Id extends string | number, Operation> {
     // last id received from iterator
     minId: Id | undefined;
     // every next id will receive `lastAge + 1`
     lastAge: number;
 
-    readonly cache: Map<Id, number>;
+    readonly cache: Map<Id, CachedEntry<Id, Operation>>;
 
     // iterator is finished
     done: boolean;
 
-    readonly iterator: Iterator<History.Entry<Id, unknown>>;
+    readonly iterator: Iterator<History.Entry<Id, Operation>>;
 }
 
-const caches = new WeakMap<History<any, unknown>, CacheState<any>>();
+const caches = new WeakMap<History<any, any>, CacheState<any, any>>();
 
 /**
  * @internal
  */
-export function ageOf<Id extends string | number>(
-    history: History<Id, unknown>,
+export function lookup<Id extends string | number, Operation>(
+    history: History<Id, Operation>,
     id: Id,
-): number | undefined {
+): CachedEntry<Id, Operation> | undefined {
     let state = caches.get(history);
     if (state === undefined) {
         state = {
@@ -47,14 +55,16 @@ export function ageOf<Id extends string | number>(
 
     for (let i = state.iterator.next(); !i.done; i = state.iterator.next()) {
         const age = state.lastAge;
-        const itemId = i.value.id;
+        const entry = i.value;
+        const itemId = entry.id;
         state.lastAge++;
         state.minId = itemId;
 
-        state.cache.set(itemId, age);
+        const cachedEntry = { entry, age };
+        state.cache.set(itemId, cachedEntry);
 
         if (itemId === id) {
-            return age;
+            return cachedEntry;
         }
 
         if (itemId < id) {

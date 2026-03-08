@@ -1,4 +1,4 @@
-import { ageOf } from "./age-of.ts";
+import { lookup } from "./lookup.ts";
 import {
     Comparison,
     emptyList,
@@ -51,12 +51,7 @@ export class History<Id extends string | number, Operation> {
      * If the item undone and do not present in current branch, returns undefined.
      */
     get(id: Id): History.Entry<Id, Operation> | undefined {
-        for (const entry of this) {
-            if (entry.id === id) {
-                return entry;
-            }
-        }
-        return undefined;
+        return lookup(this, id)?.entry;
     }
 
     /**
@@ -65,7 +60,7 @@ export class History<Id extends string | number, Operation> {
      * `undefined` means that the id is not present in the collection or was undone.
      */
     ageOf(id: Id): number | undefined {
-        return ageOf(this, id);
+        return lookup(this, id)?.age;
     }
 
     /**
