@@ -22,6 +22,8 @@ npm install @monkin/history
 
 `History` tracks operations and enables navigating through the history path.
 
+> **Note**: The `IdGenerator` must always return an identifier that is strictly greater than the `maxId` provided to it. This is required for correct operation of the history.
+
 #### Basic Usage
 
 ```typescript
@@ -98,7 +100,7 @@ The library works effectively with the latest items. Accessing deep history may 
 
 ## Basic Workflow
 
-1. **Setup**: Create a `History` instance using `History.empty()` with a custom `IdGenerator` (e.g., numeric or UUID).
+1. **Setup**: Create a `History` instance using `History.empty()` with a custom `IdGenerator` (e.g., numeric or UUID). **Note**: Every next generated key must be greater than the provided `maxId`.
 2. **Execute and Record**: When a user performs an action, call `history.add(operation)` to record it. This returns a new `History` instance representing the updated state.
 3. **Undo/Redo**: Move the `current` pointer using `history.undo()` and `history.redo()`. This allows the application to traverse back and forth through recorded operations.
 4. **State Reconstruction**: Iterate through the `history` object (which follows the `previous` pointers from the `current` entry) to reconstruct the application state from operations.
