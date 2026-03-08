@@ -16,6 +16,7 @@ import {
 export class SnapshotList<Id extends string | number, Snapshot> {
     /** @internal */
     constructor(
+        /** @internal */
         private readonly items: SortedList<SnapshotList.Item<Id, Snapshot>>,
     ) {}
 

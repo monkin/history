@@ -29,12 +29,16 @@ export class History<Id extends string | number, Operation> {
         /**
          * Pointer to the current entry in the history.
          * It can be moved by undo/redo.
+         *
+         * @internal
          */
         readonly current: Id | undefined,
         /**
          * Function to generate a new unique id for an entry.
          * It receives the biggest Id in the history if any.
          * The generated id should be bigger than the provided one.
+         *
+         * @internal
          */
         readonly generateId: History.IdGenerator<Id>,
     ) {}
@@ -52,6 +56,18 @@ export class History<Id extends string | number, Operation> {
      */
     get(id: Id): History.Entry<Id, Operation> | undefined {
         return lookup(this, id);
+    }
+
+    /**
+     * Checks if an entry with the specified ID exists.
+     * If the item is undone and not present in the current branch returns false.
+     */
+    has(id: Id): boolean {
+        return this.get(id) !== undefined;
+    }
+
+    isUndone(id: Id): boolean {
+        return !this.has(id) && this.entry(id) !== undefined;
     }
 
     /**
