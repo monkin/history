@@ -94,6 +94,14 @@ snapshots = snapshots.remove(1);
 - `snapshots.filter(predicate)`: Returns a new `SnapshotList` containing only items that satisfy the predicate.
 - `[Symbol.iterator]`: The `SnapshotList` object itself is iterable and yields all items in sorted order.
 
+### Why Decoupled?
+
+`History` (the operation list) and `SnapshotList` are intentionally decoupled to provide maximum flexibility.
+
+While most applications use a single history and a single snapshot list, some use cases require more complex compositions. For example, an animation editor might have a single `History` for global actions but 30 separate `SnapshotList` instances—one for each frame.
+
+By keeping these components separate, the library remains lightweight and avoids imposing a specific structure. A combined component managing both can be added by the user or may be included in the library later if needed.
+
 ## Performance
 
 The library works effectively with the latest items. Accessing deep history may result in slower performance, but it typically remains acceptable for most use cases.
