@@ -60,7 +60,16 @@ export class History<Id extends string | number, Operation> {
      * `undefined` means that the id is not present in the collection or was undone.
      */
     ageOf(id: Id): number | undefined {
-        return lookup(this, id)?.age;
+        const { current } = this;
+        if (current === undefined) return undefined;
+        if (id === current) return 0;
+
+        const currentEntry = this.get(current);
+        const oldEntry = this.get(id);
+
+        return currentEntry && oldEntry
+            ? currentEntry.generation - oldEntry.generation
+            : undefined;
     }
 
     /**
