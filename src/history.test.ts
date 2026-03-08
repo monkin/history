@@ -118,8 +118,8 @@ describe("History", () => {
         });
     });
 
-    describe("all", () => {
-        it("should return all items in the history", () => {
+    describe("entries", () => {
+        it("should return entries items in the history", () => {
             let history = new History<number, string>(
                 emptyList as any,
                 undefined,
@@ -129,7 +129,7 @@ describe("History", () => {
             history = history.add("op1").add("op2").add("op3");
             expect(history.current).toBe(3);
 
-            const all = Array.from(history.all());
+            const all = Array.from(history.entries());
             expect(all).toEqual([
                 { id: 3, operation: "op3", previous: 2, generation: 2 },
                 { id: 2, operation: "op2", previous: 1, generation: 1 },
@@ -137,7 +137,7 @@ describe("History", () => {
             ]);
         });
 
-        it("should return all items even after undo", () => {
+        it("should return entries items even after undo", () => {
             let history = new History<number, string>(
                 emptyList as any,
                 undefined,
@@ -148,7 +148,7 @@ describe("History", () => {
             history = history.undo();
             expect(history.current).toBe(2);
 
-            const all = Array.from(history.all());
+            const all = Array.from(history.entries());
             expect(all).toEqual([
                 { id: 3, operation: "op3", previous: 2, generation: 2 },
                 { id: 2, operation: "op2", previous: 1, generation: 1 },
@@ -163,7 +163,7 @@ describe("History", () => {
                 generateId,
             );
 
-            const all = Array.from(history.all());
+            const all = Array.from(history.entries());
             expect(all).toEqual([]);
         });
     });
@@ -212,7 +212,7 @@ describe("History", () => {
             expect(history.canUndo).toBe(false);
             expect(history.canRedo).toBe(false);
             expect(Array.from(history)).toEqual([]);
-            expect(Array.from(history.all())).toEqual([]);
+            expect(Array.from(history.entries())).toEqual([]);
         });
     });
 
@@ -242,7 +242,11 @@ describe("History", () => {
             expect(history.current).toBeUndefined();
 
             history = history.upload([item1, item2]);
-            expect(Array.from(history.all())).toEqual([item3, item2, item1]);
+            expect(Array.from(history.entries())).toEqual([
+                item3,
+                item2,
+                item1,
+            ]);
         });
 
         it("should allow replacing existing items including current", () => {
@@ -292,7 +296,11 @@ describe("History", () => {
 
             expect(history.current).toBe(2);
             expect(Array.from(history)).toEqual([item2, item1]);
-            expect(Array.from(history.all())).toEqual([item3, item2, item1]);
+            expect(Array.from(history.entries())).toEqual([
+                item3,
+                item2,
+                item1,
+            ]);
         });
 
         it("should handle empty items", () => {
@@ -304,7 +312,7 @@ describe("History", () => {
 
             expect(history.current).toBeUndefined();
             expect(Array.from(history)).toEqual([]);
-            expect(Array.from(history.all())).toEqual([]);
+            expect(Array.from(history.entries())).toEqual([]);
         });
 
         it("should handle out-of-order items", () => {
@@ -335,7 +343,11 @@ describe("History", () => {
             );
 
             expect(history.current).toBe(3);
-            expect(Array.from(history.all())).toEqual([item3, item2, item1]);
+            expect(Array.from(history.entries())).toEqual([
+                item3,
+                item2,
+                item1,
+            ]);
         });
     });
 });

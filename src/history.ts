@@ -47,11 +47,18 @@ export class History<Id extends string | number, Operation> {
     }
 
     /**
-     * Get the entry with the given id.
-     * If the item undone and do not present in current branch, returns undefined.
+     * Get the entry with the given id if it's reachable from the current state.
+     * If the item is undone and not present in the current branch returns undefined.
      */
     get(id: Id): History.Entry<Id, Operation> | undefined {
         return lookup(this, id);
+    }
+
+    /**
+     * Get the entry with the given id, even if it's undone.
+     */
+    entry(id: Id): History.Entry<Id, Operation> | undefined {
+        return getItem(this.items, lookupById(id));
     }
 
     /**
@@ -142,16 +149,16 @@ export class History<Id extends string | number, Operation> {
     }
 
     /**
-     * Retrieves a generator that yields all (undone too) items in the history.
+     * Retrieves a generator that yields all (including undone) entries in the history.
      */
-    *all(): Generator<History.Entry<Id, Operation>> {
+    *entries(): Generator<History.Entry<Id, Operation>> {
         return yield* iterate(this.items);
     }
 
     /**
      * Iterate over history. Undone operations are skipped.
      *
-     * To iterate over all operations, use `for (const item of history.all()) { ... }` instead.
+     * To iterate over all operations, use `for (const item of history.entries()) { ... }` instead.
      */
     [Symbol.iterator](): Generator<History.Entry<Id, Operation>> {
         return this.iterate(this.current);

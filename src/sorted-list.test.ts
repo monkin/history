@@ -75,7 +75,7 @@ describe("SortedList", () => {
             current = current.next;
         }
 
-        // Verify items are all there and sorted
+        // Verify items are entries there and sorted
         const allItems = toArray(list);
         expect(allItems).toContain(55);
 
@@ -263,7 +263,7 @@ describe("SortedList", () => {
             }
             const list = insertAll(emptyList, items, compare);
 
-            // Re-inserting all items
+            // Re-inserting entries items
             const list2 = insertAll(list, items, compare);
             expect(list2).toBe(list);
 
@@ -411,7 +411,7 @@ describe("SortedList", () => {
             expect(toArray(filtered)).toEqual([30, 40, 50]);
         });
 
-        it("should return empty list if all items are filtered out", () => {
+        it("should return empty list if entries items are filtered out", () => {
             const items = [10, 20, 30];
             const list = insertAll(emptyList, items, compare);
             const filtered = filter(list, (x: number) => x > 100);
@@ -419,7 +419,7 @@ describe("SortedList", () => {
             expect(filtered).toBe(emptyList);
         });
 
-        it("should return the same list if all items match the predicate", () => {
+        it("should return the same list if entries items match the predicate", () => {
             const items = [10, 20, 30];
             const list = insertAll(emptyList, items, compare);
             const filtered = filter(list, (x: number) => x > 0);

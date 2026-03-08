@@ -5,7 +5,7 @@ describe("History.get", () => {
     const generateId: History.IdGenerator<number> = (maxId) =>
         ((maxId as number) ?? 0) + 1;
 
-    it("should return correct entry for all items in various orders", () => {
+    it("should return correct entry for entries items in various orders", () => {
         let history = History.empty<number, string>(generateId);
         history = history.add("op1").add("op2").add("op3");
 

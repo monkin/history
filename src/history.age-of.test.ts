@@ -5,7 +5,7 @@ describe("History.ageOf reproduction", () => {
     const generateId: History.IdGenerator<number> = (maxId) =>
         ((maxId as number) ?? 0) + 1;
 
-    it("should return correct age for all items in various orders", () => {
+    it("should return correct age for entries items in various orders", () => {
         let history = History.empty<number, string>(generateId);
         history = history.add("op1").add("op2").add("op3");
 
@@ -65,7 +65,7 @@ describe("History.ageOf reproduction", () => {
         expect(history.ageOf(3)).toBeUndefined();
 
         history = history.add("op4"); // current is 4, previous is 1
-        // Path: 4 -> 1. op2 and op3 are in history.all() but not in current history branch.
+        // Path: 4 -> 1. op2 and op3 are in history.entries() but not in current history branch.
         expect(history.ageOf(4)).toBe(0);
         expect(history.ageOf(1)).toBe(1);
         expect(history.ageOf(2)).toBeUndefined();
