@@ -15,6 +15,9 @@ interface CacheState<Id extends string | number, Operation> {
 const caches = new WeakMap<History<any, any>, CacheState<any, any>>();
 
 /**
+ * Find an entry by ID in history.
+ *
+ * It uses a lazy iterator and caches results to optimize subsequent lookups.
  * @internal
  */
 export function lookup<Id extends string | number, Operation>(
