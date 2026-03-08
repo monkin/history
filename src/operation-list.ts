@@ -100,7 +100,9 @@ export class OperationList<Id extends string | number, Operation> {
      * This operation should be used for partial operation list loading.
      * It won't change `current`, since it uploads older item.
      */
-    upload(items: OperationList.Entry<Id, Operation>[]): OperationList<Id, Operation> {
+    upload(
+        items: OperationList.Entry<Id, Operation>[],
+    ): OperationList<Id, Operation> {
         return new OperationList(
             insertAll(this.items, items, compareEntries),
             this.current,

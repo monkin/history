@@ -1,14 +1,23 @@
 # @monkin/history
 
-An immutable operation list management library for tracking operations and state snapshots.
+An immutable library for document history management with first-class undo/redo support.
+
+While any document state can be reconstructed by replaying operations from the beginning, `@monkin/history` optimizes this process by combining an operation timeline with state snapshots.
+
+> **Core Concept**
+>
+> `Current State = Latest Snapshot + Subsequent Operations`
+
+---
 
 ## Features
 
-- **Read-only Operation List**: A sequence of operations modeled as a linked list, where each entry points to its predecessor.
-- **Undo/Redo**: Navigation through the operation list by moving a `current` pointer.
-- **Immutable State**: Every operation returns a new instance of `OperationList` or `SnapshotList`.
-- **Custom ID Generation**: Flexibile identifier management for operation list entries.
-- **Snapshot Management**: A separate `SnapshotList` to store and retrieve state snapshots.
+- **Immutable by Design**: Every operation returns a new instance of `OperationList` or `SnapshotList`.
+- **Linked-List Timeline**: Operations are modeled as a sequence where each entry points to its predecessor, allowing efficient undo/redo traversal.
+- **Flexible ID Generation**: Use numeric IDs, UUIDs, or any custom identifier.
+- **Decoupled Snapshots**: Manage state snapshots independently for maximum architectural flexibility.
+
+---
 
 ## Installation
 
@@ -16,56 +25,56 @@ An immutable operation list management library for tracking operations and state
 npm install @monkin/history
 ```
 
+---
+
 ## Core Components
 
 ### OperationList
 
-`OperationList` tracks operations and enables navigating through the operation list path.
+Tracks document operations and manages the undo/redo pointer.
 
-> **Note**: The `IdGenerator` must always return an identifier that is strictly greater than the `maxId` provided to it. This is required for correct operation of the history.
+> [!IMPORTANT]
+> The `IdGenerator` must always return an identifier strictly greater than the provided `maxId`. This is required for correct history traversal and ordering.
 
 #### Basic Usage
 
 ```typescript
 import { OperationList } from "@monkin/history";
 
-// 1. Initialize with an ID generator
+// Initialize with an ID generator
 const generateId: OperationList.IdGenerator<number> = (maxId) => (maxId ?? 0) + 1;
-let operationList = OperationList.empty<number, string>(generateId);
+let history = OperationList.empty<number, string>(generateId);
 
-// 2. Add an operation
-operationList = operationList.add("Create Node");
-operationList = operationList.add("Move Node");
+// Record operations
+history = history.add("Add Header");
+history = history.add("Change Background");
 
-// 3. Navigate through the operation list
-if (operationList.canUndo) {
-    operationList = operationList.undo(); // Pointer moves to "Create Node"
-}
+// Undo and Redo
+if (history.canUndo) history = history.undo(); // Moves pointer back
+if (history.canRedo) history = history.redo(); // Moves pointer forward
 
-if (operationList.canRedo) {
-    operationList = operationList.redo(); // Pointer moves back to "Move Node"
-}
-
-// 4. Iterate over current branch
-for (const entry of operationList) {
+// Reconstruct state from the current branch
+for (const entry of history) {
     console.log(entry.operation);
 }
 ```
 
 #### API Highlights
 
-- `operationList.current`: The identifier of the current operation.
-- `operationList.get(id)`: Retrieves an entry if it's reachable from the current state.
-- `operationList.entry(id)`: Retrieves an entry by ID, even if it's currently undone.
-- `operationList.entries()`: A generator that yields all entries in the operation list, including undone ones.
-- `[Symbol.iterator]`: The `OperationList` object itself is iterable and yields entries from the current branch (skipping undone operations).
-- `operationList.isUndone(id)`: Checks if an operation exists but is currently undone.
-- `operationList.ageOf(id)`: Calculates the generation distance between the current state and a given entry.
-- `operationList.upload(items)`: Uploads a list of entries to the operation list, useful for partial operation list loading.
+- `history.current`: The ID of the current operation.
+- `history.get(id)`: Retrieves an entry reachable from the current state.
+- `history.entry(id)`: Retrieves an entry by ID, including undone ones.
+- `history.entries()`: Generator yielding all recorded entries.
+- `[Symbol.iterator]`: Iterates over the current branch (skipping undone operations).
+- `history.ageOf(id)`: Distance between current state and a given entry.
+- `history.isUndone(id)`: Checks if an operation exists but is currently undone.
+- `history.upload(items)`: Bulk-upload entries, useful for partial history loading.
+
+---
 
 ### SnapshotList
 
-`SnapshotList` is an immutable collection used to store and manage snapshots indexed by identifiers.
+An immutable collection for managing state snapshots indexed by identifiers.
 
 #### Basic Usage
 
@@ -74,53 +83,56 @@ import { SnapshotList } from "@monkin/history";
 
 let snapshots = SnapshotList.empty<number, string>();
 
-// Add a snapshot
+// Add and retrieve snapshots
 snapshots = snapshots.add(1, "Initial Content");
-
-// Get a snapshot
 const item = snapshots.get(1);
 console.log(item?.snapshot); // "Initial Content"
 
-// Remove a snapshot
+// Cleanup
 snapshots = snapshots.remove(1);
 ```
 
 #### API Highlights
 
-- `snapshots.get(id)`: Retrieves a snapshot item by its ID.
-- `snapshots.add(id, snapshot)`: Adds a new snapshot to the list.
-- `snapshots.addAll(items)`: Adds multiple snapshots from an iterable.
+- `snapshots.get(id)`: Retrieves a snapshot item by ID.
+- `snapshots.add(id, snapshot)`: Adds a new snapshot.
+- `snapshots.addAll(items)`: Bulk-add snapshots from an iterable.
 - `snapshots.remove(id)`: Removes a snapshot by its ID.
-- `snapshots.filter(predicate)`: Returns a new `SnapshotList` containing only items that satisfy the predicate.
-- `[Symbol.iterator]`: The `SnapshotList` object itself is iterable and yields all items in sorted order.
+- `snapshots.filter(predicate)`: Filter snapshots into a new list.
+- `[Symbol.iterator]`: Iterates over all items in sorted order.
+
+---
+
+## Design Philosophy
 
 ### Why Decoupled?
 
-`OperationList` (the operation list) and `SnapshotList` are intentionally decoupled to provide maximum flexibility.
+`OperationList` and `SnapshotList` are intentionally separate primitives. This approach avoids imposing a specific state structure and enables complex compositions:
 
-While most applications use a single operation list and a single snapshot list, some use cases require more complex compositions. For example, an animation editor might have a single `OperationList` for global actions but 30 separate `SnapshotList` instances—one for each frame.
+- **Modular Architecture**: Most apps use one list of each, but some require more. An animation editor might use one `OperationList` for global actions but 30 separate `SnapshotList` instances—one per frame.
+- **Lightweight**: The library provides the mathematical primitives; you can easily wrap them in a higher-level "History Manager" tailored to your application's needs.
 
-By keeping these components separate, the library remains lightweight and avoids imposing a specific structure. A combined component managing both can be added by the user or may be included in the library later if needed.
+### Historical Note
+
+`OperationList` was originally named `History`. It was renamed to keep the `History` name available for consumers who want to implement their own domain-specific manager by combining these primitives.
+
+---
 
 ## Performance
 
-The library works effectively with the latest items. Accessing deep history may result in slower performance, but it typically remains acceptable for most use cases.
+The library is optimized for the latest history items. While accessing very deep history might be slower, it typically remains efficient enough for standard use cases. Use snapshots strategically to keep the number of operations to replay minimal.
 
-## Basic Workflow
+---
 
-1. **Setup**: Create a `OperationList` instance using `OperationList.empty()` with a custom `IdGenerator` (e.g., numeric or UUID). **Note**: Every next generated key must be greater than the provided `maxId`.
-2. **Execute and Record**: When a user performs an action, call `operationList.add(operation)` to record it. This returns a new `OperationList` instance representing the updated state.
-3. **Undo/Redo**: Move the `current` pointer using `operationList.undo()` and `operationList.redo()`. This allows the application to traverse back and forth through recorded operations.
-4. **State Reconstruction**: Iterate through the `operationList` object (which follows the `previous` pointers from the `current` entry) to reconstruct the application state from operations.
-5. **Optimize with Snapshots**: Use `SnapshotList` to store full state snapshots at strategic points in history. This allows for faster state reconstruction by starting from a snapshot instead of replaying all operations from the beginning.
-
-## Scripts
+## Development
 
 - `npm run dev`: Start Vite development server.
 - `npm run build`: Build the project (TypeScript & Vite).
 - `npm run test`: Run tests using Vitest.
-- `npm run lint`: Lint the project with Biome.
-- `npm run format`: Format the project with Biome.
+- `npm run lint`: Lint the project.
+- `npm run format`: Format the project.
+
+---
 
 ## License
 
