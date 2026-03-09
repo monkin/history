@@ -8,6 +8,11 @@ While any document state can be reconstructed by replaying operations from the b
 >
 > `Current State = Latest Snapshot + Subsequent Operations`
 
+> [!TIP]
+> **Built for Synchronization**
+>
+> Since history is immutable, you can save a reference at any moment and later `diff` it with the newest version. This makes it easy to implement background persistence or synchronization logic.
+
 ---
 
 ## Features
@@ -62,13 +67,14 @@ for (const entry of history) {
 #### API Highlights
 
 - `history.current`: The ID of the current operation.
+- `history.isUndone(id)`: Checks if an operation exists but is currently undone.
+- `history.ageOf(id)`: Distance between current state and a given entry.
 - `history.get(id)`: Retrieves an entry reachable from the current state.
 - `history.entry(id)`: Retrieves an entry by ID, including undone ones.
 - `history.entries()`: Generator yielding all recorded entries.
 - `[Symbol.iterator]`: Iterates over the current branch (skipping undone operations).
-- `history.ageOf(id)`: Distance between current state and a given entry.
-- `history.isUndone(id)`: Checks if an operation exists but is currently undone.
 - `history.upload(items)`: Bulk-upload entries, useful for partial history loading.
+- `OperationList.diff(before, after)`: Static method comparing two history lists to find added, removed, or changed operations.
 
 ---
 
@@ -94,12 +100,13 @@ snapshots = snapshots.remove(1);
 
 #### API Highlights
 
-- `snapshots.get(id)`: Retrieves a snapshot item by ID.
 - `snapshots.add(id, snapshot)`: Adds a new snapshot.
 - `snapshots.addAll(items)`: Bulk-add snapshots from an iterable.
 - `snapshots.remove(id)`: Removes a snapshot by its ID.
+- `snapshots.get(id)`: Retrieves a snapshot item by ID.
 - `snapshots.filter(predicate)`: Filter snapshots into a new list.
 - `[Symbol.iterator]`: Iterates over all items in sorted order.
+- `SnapshotList.diff(before, after)`: Static method comparing two snapshot lists to find added, removed, or changed items.
 
 ---
 

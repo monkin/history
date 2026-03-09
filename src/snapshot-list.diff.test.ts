@@ -6,7 +6,7 @@ describe("SnapshotList.diff", () => {
         let snapshots1 = SnapshotList.empty<number, string>();
         snapshots1 = snapshots1.add(1, "s1").add(2, "s2");
 
-        let snapshots2 = snapshots1.add(3, "s3");
+        const snapshots2 = snapshots1.add(3, "s3");
 
         const diff = SnapshotList.diff(snapshots1, snapshots2);
         expect(diff).toEqual([[undefined, snapshots2.get(3)]]);
@@ -24,10 +24,14 @@ describe("SnapshotList.diff", () => {
 
     it("should detect changed entries (different instances)", () => {
         const snapshots1 = SnapshotList.empty<number, string>().add(1, "s1");
-        const item1 = snapshots1.get(1)!;
+        const item1 = snapshots1.get(1);
+        if (!item1) throw new Error("Item not found");
 
         // Item with the same ID but different snapshot
-        const item2: SnapshotList.Item<number, string> = { ...item1, snapshot: "s1-modified" };
+        const item2: SnapshotList.Item<number, string> = {
+            ...item1,
+            snapshot: "s1-modified",
+        };
 
         const snapshots2 = SnapshotList.fromItems([item2]);
 
