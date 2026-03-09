@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
     Comparison,
+    diff,
     each,
     emptyList,
     filter,
@@ -256,7 +257,7 @@ describe("SortedList", () => {
             expect(list3).toBe(list);
         });
 
-        it("should return the same list if inserting same items into a multichunk list", () => {
+        it("should return the same list if inserting same items into a multi-chunk list", () => {
             const items = [];
             for (let i = 0; i < 100; i++) {
                 items.push(i);
@@ -441,6 +442,59 @@ describe("SortedList", () => {
         it("should handle empty list", () => {
             const filtered = filter(emptyList, (x: number) => x > 0);
             expect(filtered).toBe(emptyList);
+        });
+    });
+
+    describe("diff", () => {
+        it("should return an empty array for identical lists", () => {
+            const list = insertAll(emptyList, [1, 2, 3], compare);
+            expect(diff(list, list, compare)).toEqual([]);
+        });
+
+        it("should detect created elements", () => {
+            const list1 = insertAll(emptyList, [1, 3], compare);
+            const list2 = insertAll(emptyList, [1, 2, 3], compare);
+            expect(diff(list1, list2, compare)).toEqual([[undefined, 2]]);
+        });
+
+        it("should detect deleted elements", () => {
+            const list1 = insertAll(emptyList, [1, 2, 3], compare);
+            const list2 = insertAll(emptyList, [1, 3], compare);
+            expect(diff(list1, list2, compare)).toEqual([[2, undefined]]);
+        });
+
+        it("should detect updated elements", () => {
+            const compareObj = (a: { id: number }, b: { id: number }) => {
+                if (a.id < b.id) return Comparison.Less;
+                if (a.id > b.id) return Comparison.Greater;
+                return Comparison.Equal;
+            };
+            const obj1a = { id: 1, val: "a" };
+            const obj1b = { id: 1, val: "b" };
+            const obj2 = { id: 2, val: "c" };
+
+            const list1 = insertAll(emptyList, [obj1a, obj2], compareObj);
+            const list2 = insertAll(emptyList, [obj1b, obj2], compareObj);
+
+            expect(diff(list1, list2, compareObj)).toEqual([[obj1a, obj1b]]);
+        });
+
+        it("should handle multi-chunk lists and reuse identical chunks", () => {
+            const items1 = Array.from({ length: 100 }, (_, i) => i);
+
+            const compareObj = (a: { id: number }, b: { id: number }) => {
+                if (a.id < b.id) return Comparison.Less;
+                if (a.id > b.id) return Comparison.Greater;
+                return Comparison.Equal;
+            };
+            const itemsObj1 = items1.map((i) => ({ id: i, val: `v${i}` }));
+            const listObj1 = insertAll(emptyList, itemsObj1, compareObj);
+
+            const updatedItem = { id: 50, val: "v50-updated" };
+            const listObj2 = insertAll(listObj1, [updatedItem], compareObj);
+
+            const result = diff(listObj1, listObj2, compareObj);
+            expect(result).toEqual([[itemsObj1[50], updatedItem]]);
         });
     });
 });

@@ -404,6 +404,67 @@ export const remove = <T>(
 export const diff = <T>(
     before: SortedList<T>,
     after: SortedList<T>,
+    compare: CompareFunction<T>,
 ): [T | undefined, T | undefined][] => {
-    throw new Error("Not implemented");
+    const result: [T | undefined, T | undefined][] = [];
+
+    let currentBefore: SortedList<T> | undefined = before;
+    let currentAfter: SortedList<T> | undefined = after;
+    let indexBefore = 0;
+    let indexAfter = 0;
+
+    while (currentBefore || currentAfter) {
+        if (currentBefore === currentAfter && indexBefore === indexAfter) {
+            break;
+        }
+
+        const itemsBefore = currentBefore?.items;
+        const itemsAfter = currentAfter?.items;
+
+        const hasBefore = !!itemsBefore && indexBefore < itemsBefore.length;
+        const hasAfter = !!itemsAfter && indexAfter < itemsAfter.length;
+
+        if (hasBefore && hasAfter) {
+            const itemBefore = itemsBefore[indexBefore];
+            const itemAfter = itemsAfter[indexAfter];
+            const cmp = compare(itemBefore, itemAfter);
+            if (cmp === Comparison.Equal) {
+                if (itemBefore !== itemAfter) {
+                    result.push([itemBefore, itemAfter]);
+                }
+                indexBefore++;
+                indexAfter++;
+            } else if (cmp === Comparison.Less) {
+                result.push([itemBefore, undefined]);
+                indexBefore++;
+            } else {
+                result.push([undefined, itemAfter]);
+                indexAfter++;
+            }
+        } else if (hasBefore) {
+            result.push([itemsBefore[indexBefore], undefined]);
+            indexBefore++;
+        } else if (hasAfter) {
+            result.push([undefined, itemsAfter[indexAfter]]);
+            indexAfter++;
+        }
+
+        let moved = false;
+        if (currentBefore && indexBefore >= (itemsBefore?.length ?? 0)) {
+            currentBefore = currentBefore.next;
+            indexBefore = 0;
+            moved = true;
+        }
+        if (currentAfter && indexAfter >= (itemsAfter?.length ?? 0)) {
+            currentAfter = currentAfter.next;
+            indexAfter = 0;
+            moved = true;
+        }
+
+        if (!moved && !hasBefore && !hasAfter) {
+            break;
+        }
+    }
+
+    return result;
 };
