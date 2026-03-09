@@ -1,6 +1,7 @@
 import { lookup } from "./lookup.ts";
 import {
     Comparison,
+    diff,
     emptyList,
     getItem,
     insert,
@@ -219,6 +220,16 @@ export class OperationList<Id extends string | number, Operation> {
             current,
             generateId,
         );
+    }
+
+    static diff<Id extends string | number, Operation>(
+        before: OperationList<Id, Operation>,
+        after: OperationList<Id, Operation>,
+    ): [
+        OperationList.Entry<Id, Operation> | undefined,
+        OperationList.Entry<Id, Operation> | undefined,
+    ][] {
+        return diff(before.items, after.items, compareEntries);
     }
 }
 

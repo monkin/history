@@ -496,5 +496,27 @@ describe("SortedList", () => {
             const result = diff(listObj1, listObj2, compareObj);
             expect(result).toEqual([[itemsObj1[50], updatedItem]]);
         });
+
+        it("should diff lists with 16 elements", () => {
+            const items1 = Array.from({ length: 16 }, (_, i) => i);
+            const items2 = Array.from({ length: 16 }, (_, i) => i + 100);
+
+            const list1 = insertAll(emptyList, items1, compare);
+            const list2 = insertAll(emptyList, items2, compare);
+
+            const result = diff(list1, list2, compare);
+            expect(result.length).toBe(32);
+        });
+
+        it("should diff lists with 48 elements", () => {
+            const items1 = Array.from({ length: 48 }, (_, i) => i);
+            const items2 = Array.from({ length: 48 }, (_, i) => i + 100);
+
+            const list1 = insertAll(emptyList, items1, compare);
+            const list2 = insertAll(emptyList, items2, compare);
+
+            const result = diff(list1, list2, compare);
+            expect(result.length).toBe(96);
+        });
     });
 });

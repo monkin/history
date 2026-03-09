@@ -1,6 +1,7 @@
 import { lookup } from "./lookup.ts";
 import {
     Comparison,
+    diff,
     emptyList,
     filter,
     insert,
@@ -63,6 +64,16 @@ export class SnapshotList<Id extends string | number, Snapshot> {
         predicate: (item: SnapshotList.Item<Id, Snapshot>) => boolean,
     ): SnapshotList<Id, Snapshot> {
         return new SnapshotList(filter(this.items, predicate));
+    }
+
+    static diff<Id extends string | number, Snapshot>(
+        before: SnapshotList<Id, Snapshot>,
+        after: SnapshotList<Id, Snapshot>,
+    ): [
+        SnapshotList.Item<Id, Snapshot> | undefined,
+        SnapshotList.Item<Id, Snapshot> | undefined,
+    ][] {
+        return diff(before.items, after.items, compareItems);
     }
 }
 
