@@ -4,8 +4,8 @@
     "author": "Andrei Monkin <monkin.andrey@gmail.com>",
     "license": "MIT",
     "type": "module",
-    "main": "./dist/operation-list.cjs",
-    "module": "./dist/operation-list.js",
+    "main": "./dist/history.cjs",
+    "module": "./dist/history.js",
     "types": "./dist/index.d.ts",
     "files": [
         "dist"
@@ -13,8 +13,8 @@
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
-            "import": "./dist/operation-list.js",
-            "require": "./dist/operation-list.cjs"
+            "import": "./dist/history.js",
+            "require": "./dist/history.cjs"
         }
     },
     "scripts": {

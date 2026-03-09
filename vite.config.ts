@@ -10,10 +10,10 @@ export default defineConfig({
     build: {
         lib: {
             entry: "./src/index.ts",
-            name: "OperationList",
-            fileName: (format) =>
-                `operation-list.${format === "es" ? "js" : "cjs"}`,
+            name: "history",
+            fileName: (format) => `history.${format === "es" ? "js" : "cjs"}`,
         },
         minify: "terser",
+        sourcemap: true,
     },
 });
