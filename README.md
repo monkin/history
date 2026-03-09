@@ -140,6 +140,7 @@ The library is optimized for the latest history items. While accessing very deep
 - `npm run test`: Run tests using Vitest.
 - `npm run lint`: Lint the project.
 - `npm run format`: Format the project.
+- `npm run prepublishOnly`: Build, lint, and test before publish.
 
 ---
 
