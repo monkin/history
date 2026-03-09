@@ -400,3 +400,10 @@ export const remove = <T>(
 
     return list;
 };
+
+export const diff = <T>(
+    before: SortedList<T>,
+    after: SortedList<T>,
+): [T | undefined, T | undefined][] => {
+    throw new Error("Not implemented");
+};
