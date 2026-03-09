@@ -7,9 +7,6 @@
     "main": "./dist/history.cjs",
     "module": "./dist/history.js",
     "types": "./dist/index.d.ts",
-    "files": [
-        "dist"
-    ],
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",

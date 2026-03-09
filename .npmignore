@@ -1,0 +1,39 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependencies
+node_modules
+package-lock.json
+
+# Build directories
+dist-ssr
+
+# Source code and tests
+src
+*.test.ts
+
+# Configuration files
+biome.json
+tsconfig.json
+vite.config.ts
+
+# CI/CD and hidden files
+.github
+.idea
+.vscode
+.gitignore
+.DS_Store
+
+# Miscellaneous
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.local
