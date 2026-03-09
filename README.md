@@ -1,5 +1,7 @@
 # @monkin/history
 
+[![CI](https://github.com/monkin/history/actions/workflows/ci.yml/badge.svg)](https://github.com/monkin/history/actions/workflows/ci.yml)
+
 An immutable library for document history management with first-class undo/redo support.
 
 While any document state can be reconstructed by replaying operations from the beginning, `@monkin/history` optimizes this process by combining an operation timeline with state snapshots.
