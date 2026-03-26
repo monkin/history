@@ -11,7 +11,10 @@ describe("OperationList.setPointer", () => {
 
         history = history.setPointer(2);
         expect(history.pointer).toBe(2);
-        expect(Array.from(history).map((e) => e.operation)).toEqual(["op2", "op1"]);
+        expect(Array.from(history).map((e) => e.operation)).toEqual([
+            "op2",
+            "op1",
+        ]);
     });
 
     it("should set pointer to an undone operation", () => {
@@ -23,7 +26,11 @@ describe("OperationList.setPointer", () => {
 
         history = history.setPointer(3);
         expect(history.pointer).toBe(3);
-        expect(Array.from(history).map((e) => e.operation)).toEqual(["op3", "op2", "op1"]);
+        expect(Array.from(history).map((e) => e.operation)).toEqual([
+            "op3",
+            "op2",
+            "op1",
+        ]);
     });
 
     it("should set pointer to undefined", () => {
