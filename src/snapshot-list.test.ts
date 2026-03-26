@@ -95,6 +95,18 @@ describe("SnapshotList", () => {
         ]);
     });
 
+    it("should work with bigint ids", () => {
+        const list = SnapshotList.empty<bigint, string>()
+            .add(2n, "two")
+            .add(1n, "one")
+            .add(3n, "three");
+        expect([...list]).toEqual([
+            { id: 3n, snapshot: "three" },
+            { id: 2n, snapshot: "two" },
+            { id: 1n, snapshot: "one" },
+        ]);
+    });
+
     it("should get a snapshot by id", () => {
         const list = SnapshotList.empty<number, string>()
             .add(1, "one")

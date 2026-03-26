@@ -22,7 +22,7 @@ import {
  * (resizing while mouse moving, for example) should be stored outside until the
  * operation is finished ('mouseup' in case of resizing).
  */
-export class OperationList<Id extends string | number, Operation> {
+export class OperationList<Id extends string | number | bigint, Operation> {
     /** @internal */
     constructor(
         /** @internal */
@@ -204,13 +204,13 @@ export class OperationList<Id extends string | number, Operation> {
         }
     }
 
-    static empty<Id extends string | number, Operation>(
+    static empty<Id extends string | number | bigint, Operation>(
         generateId: OperationList.IdGenerator<Id>,
     ): OperationList<Id, Operation> {
         return new OperationList(emptyList, undefined, generateId);
     }
 
-    static fromItems<Id extends string | number, Operation>(
+    static fromItems<Id extends string | number | bigint, Operation>(
         current: Id | undefined,
         items: OperationList.Entry<Id, Operation>[],
         generateId: OperationList.IdGenerator<Id>,
@@ -222,7 +222,7 @@ export class OperationList<Id extends string | number, Operation> {
         );
     }
 
-    static diff<Id extends string | number, Operation>(
+    static diff<Id extends string | number | bigint, Operation>(
         before: OperationList<Id, Operation>,
         after: OperationList<Id, Operation>,
     ): [
@@ -243,7 +243,7 @@ const compareEntries = (
 };
 
 const lookupById =
-    <Id extends string | number>(id: Id) =>
+    <Id extends string | number | bigint>(id: Id) =>
     (entry: OperationList.Entry<Id, unknown>): Comparison => {
         if (id < entry.id) return Comparison.Greater;
         if (id > entry.id) return Comparison.Less;
@@ -256,7 +256,7 @@ export namespace OperationList {
      *
      * Each entry has a unique id and a reference to the previous one.
      */
-    export interface Entry<Id extends string | number, Operation> {
+    export interface Entry<Id extends string | number | bigint, Operation> {
         readonly id: Id;
         readonly previous: Id | undefined;
         readonly generation: number;
@@ -266,12 +266,13 @@ export namespace OperationList {
     /**
      * Get the id type of the entry.
      */
-    export type Id<T extends Entry<string | number, unknown>> = T["id"];
+    export type Id<T extends Entry<string | number | bigint, unknown>> =
+        T["id"];
 
     /**
      * Get the operation type of the entry.
      */
-    export type Operation<T extends Entry<string | number, unknown>> =
+    export type Operation<T extends Entry<string | number | bigint, unknown>> =
         T["operation"];
 
     /**
@@ -279,7 +280,7 @@ export namespace OperationList {
      * @param maxId The biggest id in the operation list, or undefined if the operation list is empty.
      * @returns A new id. It must be bigger than the provided one.
      */
-    export type IdGenerator<Id extends string | number> = (
+    export type IdGenerator<Id extends string | number | bigint> = (
         maxId: Id | undefined,
     ) => Id;
 }

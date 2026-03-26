@@ -303,6 +303,29 @@ describe("OperationList", () => {
             ]);
         });
 
+        it("should work with bigint ids", () => {
+            const generateBigIntId: OperationList.IdGenerator<bigint> = (
+                maxId,
+            ) => (maxId ?? 0n) + 1n;
+            let history = OperationList.empty<bigint, string>(generateBigIntId);
+
+            history = history.add("op1").add("op2");
+            expect(history.current).toBe(2n);
+            expect(Array.from(history)).toEqual([
+                { id: 2n, operation: "op2", previous: 1n, generation: 1 },
+                { id: 1n, operation: "op1", previous: undefined, generation: 0 },
+            ]);
+
+            history = history.undo();
+            expect(history.current).toBe(1n);
+            expect(Array.from(history)).toEqual([
+                { id: 1n, operation: "op1", previous: undefined, generation: 0 },
+            ]);
+
+            history = history.redo();
+            expect(history.current).toBe(2n);
+        });
+
         it("should handle empty items", () => {
             const history = OperationList.fromItems<number, string>(
                 undefined,

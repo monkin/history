@@ -14,21 +14,21 @@ import {
 /**
  * Immutable list of snapshots
  */
-export class SnapshotList<Id extends string | number, Snapshot> {
+export class SnapshotList<Id extends string | number | bigint, Snapshot> {
     /** @internal */
     constructor(
         /** @internal */
         private readonly items: SortedList<SnapshotList.Item<Id, Snapshot>>,
     ) {}
 
-    static empty<Id extends string | number, Snapshot>(): SnapshotList<
+    static empty<Id extends string | number | bigint, Snapshot>(): SnapshotList<
         Id,
         Snapshot
     > {
         return new SnapshotList(emptyList);
     }
 
-    static fromItems<Id extends string | number, Snapshot>(
+    static fromItems<Id extends string | number | bigint, Snapshot>(
         items: SnapshotList.Item<Id, Snapshot>[],
     ): SnapshotList<Id, Snapshot> {
         return new SnapshotList(insertAll(emptyList, items, compareItems));
@@ -66,7 +66,7 @@ export class SnapshotList<Id extends string | number, Snapshot> {
         return new SnapshotList(filter(this.items, predicate));
     }
 
-    static diff<Id extends string | number, Snapshot>(
+    static diff<Id extends string | number | bigint, Snapshot>(
         before: SnapshotList<Id, Snapshot>,
         after: SnapshotList<Id, Snapshot>,
     ): [
@@ -87,7 +87,7 @@ const compareItems = (
 };
 
 const lookupById =
-    <Id extends string | number>(id: Id) =>
+    <Id extends string | number | bigint>(id: Id) =>
     (item: SnapshotList.Item<Id, any>): Comparison => {
         if (id < item.id) return Comparison.Greater;
         if (id > item.id) return Comparison.Less;
@@ -95,7 +95,7 @@ const lookupById =
     };
 
 export namespace SnapshotList {
-    export type Item<Id extends string | number, Snapshot> = {
+    export type Item<Id extends string | number | bigint, Snapshot> = {
         id: Id;
         snapshot: Snapshot;
     };

@@ -21,7 +21,7 @@ While any document state can be reconstructed by replaying operations from the b
 
 - **Immutable by Design**: Every operation returns a new instance of `OperationList` or `SnapshotList`.
 - **Linked-List Timeline**: Operations are modeled as a sequence where each entry points to its predecessor, allowing efficient undo/redo traversal.
-- **Flexible ID Generation**: Use numeric IDs, UUIDs, or any custom identifier.
+- **Flexible ID Generation**: Use numeric IDs, UUIDs, bigints, or any custom identifier.
 - **Decoupled Snapshots**: Manage state snapshots independently for maximum architectural flexibility.
 
 ---
@@ -49,8 +49,8 @@ Tracks document operations and manages the undo/redo pointer.
 import { OperationList } from "@monkin/history";
 
 // Initialize with an ID generator
-const generateId: OperationList.IdGenerator<number> = (maxId) => (maxId ?? 0) + 1;
-let history = OperationList.empty<number, string>(generateId);
+const generateId: OperationList.IdGenerator<number | bigint> = (maxId) => (maxId ?? 0n) + 1n;
+let history = OperationList.empty<number | bigint, string>(generateId);
 
 // Record operations
 history = history.add("Add Header");
@@ -89,7 +89,7 @@ An immutable collection for managing state snapshots indexed by identifiers.
 ```typescript
 import { SnapshotList } from "@monkin/history";
 
-let snapshots = SnapshotList.empty<number, string>();
+let snapshots = SnapshotList.empty<number | bigint, string>();
 
 // Add and retrieve snapshots
 snapshots = snapshots.add(1, "Initial Content");

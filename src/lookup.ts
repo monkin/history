@@ -1,4 +1,7 @@
-interface CacheState<Id extends string | number, T extends { id: Id }> {
+interface CacheState<
+    Id extends string | number | bigint,
+    T extends { id: Id },
+> {
     // smallest id received from iterator
     lastId: Id | undefined;
 
@@ -18,10 +21,10 @@ const caches = new WeakMap<object, CacheState<any, any>>();
  * It uses a lazy iterator and caches results to optimize subsequent lookups.
  * @internal
  */
-export function lookup<Id extends string | number, T extends { id: Id }>(
-    source: Iterable<T> & object,
-    id: Id,
-): T | undefined {
+export function lookup<
+    Id extends string | number | bigint,
+    T extends { id: Id },
+>(source: Iterable<T> & object, id: Id): T | undefined {
     let state = caches.get(source);
     if (state === undefined) {
         state = {
