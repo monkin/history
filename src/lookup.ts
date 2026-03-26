@@ -16,7 +16,7 @@ interface CacheState<
 const caches = new WeakMap<object, CacheState<any, any>>();
 
 /**
- * Find an entry by ID in source.
+ * Find an entry by ID in the source.
  *
  * It uses a lazy iterator and caches results to optimize subsequent lookups.
  * @internal

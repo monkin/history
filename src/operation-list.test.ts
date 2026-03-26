@@ -216,6 +216,122 @@ describe("OperationList", () => {
         });
     });
 
+    describe("canRedo", () => {
+        it("should be false for empty history", () => {
+            const history = OperationList.empty<number, string>(generateId);
+            expect(history.canRedo).toBe(false);
+        });
+
+        it("should be true if current is undefined and history has items with no previous", () => {
+            const item1 = {
+                id: 1,
+                operation: "op1",
+                previous: undefined,
+                generation: 0,
+            };
+            const history = OperationList.fromItems<number, string>(
+                undefined,
+                [item1],
+                generateId,
+            );
+            expect(history.canRedo).toBe(true);
+        });
+
+        it("should be false if current is undefined and history only has items with previous", () => {
+            // This is an inconsistent state, but canRedo should handle it
+            const item1 = {
+                id: 2,
+                operation: "op2",
+                previous: 1,
+                generation: 1,
+            };
+            const history = OperationList.fromItems<number, string>(
+                undefined,
+                [item1],
+                generateId,
+            );
+            expect(history.canRedo).toBe(false);
+        });
+
+        it("should be false if current is the latest item", () => {
+            const item1 = {
+                id: 1,
+                operation: "op1",
+                previous: undefined,
+                generation: 0,
+            };
+            const history = OperationList.fromItems<number, string>(
+                1,
+                [item1],
+                generateId,
+            );
+            expect(history.canRedo).toBe(false);
+        });
+
+        it("should be true if there is an item with previous === current", () => {
+            const item1 = {
+                id: 1,
+                operation: "op1",
+                previous: undefined,
+                generation: 0,
+            };
+            const item2 = {
+                id: 2,
+                operation: "op2",
+                previous: 1,
+                generation: 1,
+            };
+            const history = OperationList.fromItems<number, string>(
+                1,
+                [item1, item2],
+                generateId,
+            );
+            expect(history.canRedo).toBe(true);
+        });
+
+        it("should be true even if multiple items have the same previous (branching)", () => {
+            const item1 = {
+                id: 1,
+                operation: "op1",
+                previous: undefined,
+                generation: 0,
+            };
+            const item2 = {
+                id: 2,
+                operation: "op2",
+                previous: 1,
+                generation: 1,
+            };
+            const item3 = {
+                id: 3,
+                operation: "op3",
+                previous: 1,
+                generation: 1,
+            };
+            const history = OperationList.fromItems<number, string>(
+                1,
+                [item1, item2, item3],
+                generateId,
+            );
+            expect(history.canRedo).toBe(true);
+        });
+
+        it("should be true if current is not in items but an item has previous === current", () => {
+            const item1 = {
+                id: 1,
+                operation: "op2",
+                previous: 5,
+                generation: 1,
+            };
+            const history = OperationList.fromItems<number, string>(
+                5,
+                [item1],
+                generateId,
+            );
+            expect(history.canRedo).toBe(true);
+        });
+    });
+
     describe("upload", () => {
         it("should upload missing older items", () => {
             let history = OperationList.empty<number, string>(generateId);

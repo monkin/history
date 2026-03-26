@@ -3,6 +3,7 @@ import {
     Comparison,
     diff,
     emptyList,
+    first,
     getItem,
     insert,
     insertAll,
@@ -48,7 +49,7 @@ export class OperationList<Id extends string | number | bigint, Operation> {
      * @internal
      */
     private get maxId(): Id | undefined {
-        return this.items.items[0]?.id;
+        return first(this.items)?.id;
     }
 
     /**
@@ -98,7 +99,7 @@ export class OperationList<Id extends string | number | bigint, Operation> {
 
     /**
      * Upload a list of items to the operation list.
-     * This operation should be used for partial operation list loading.
+     * This operation should be used for partial operation list loading or remote update.
      * It won't change `current`, since it uploads older item.
      */
     upload(
@@ -116,7 +117,19 @@ export class OperationList<Id extends string | number | bigint, Operation> {
     }
 
     get canRedo(): boolean {
-        return this.maxId !== this.current;
+        const { current } = this;
+        if (current === undefined) {
+            for (const item of this.entries()) {
+                if (item.previous === undefined) return true;
+            }
+            return false;
+        }
+
+        for (const item of this.entries()) {
+            if (item.previous === current) return true;
+        }
+
+        return false;
     }
 
     /**
@@ -158,7 +171,7 @@ export class OperationList<Id extends string | number | bigint, Operation> {
 
         if (current === maxId || maxId === undefined) return this;
 
-        for (const item of this.iterate(maxId)) {
+        for (const item of this.entries()) {
             if (item.previous === current) {
                 return new OperationList(items, item.id, generateId);
             }

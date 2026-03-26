@@ -468,3 +468,12 @@ export const diff = <T>(
 
     return result;
 };
+
+export function isEmpty<T>(list: SortedList<T>): boolean {
+    return list.items.length === 0 && (!list.next || isEmpty(list.next));
+}
+
+export function first<T>(list: SortedList<T>): T | undefined {
+    const { items, next } = list;
+    return items.length ? items[0] : next ? first(next) : undefined;
+}
