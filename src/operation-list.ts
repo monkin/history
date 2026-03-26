@@ -175,7 +175,7 @@ export class OperationList<Id extends string | number | bigint, Operation> {
     }
 
     /**
-     * Iterate over operation list. Undone operations are skipped.
+     * Iterate over the operation list. Undone operations are skipped.
      *
      * To iterate over all operations, use `for (const item of operationList.entries()) { ... }` instead.
      */

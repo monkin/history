@@ -313,13 +313,23 @@ describe("OperationList", () => {
             expect(history.current).toBe(2n);
             expect(Array.from(history)).toEqual([
                 { id: 2n, operation: "op2", previous: 1n, generation: 1 },
-                { id: 1n, operation: "op1", previous: undefined, generation: 0 },
+                {
+                    id: 1n,
+                    operation: "op1",
+                    previous: undefined,
+                    generation: 0,
+                },
             ]);
 
             history = history.undo();
             expect(history.current).toBe(1n);
             expect(Array.from(history)).toEqual([
-                { id: 1n, operation: "op1", previous: undefined, generation: 0 },
+                {
+                    id: 1n,
+                    operation: "op1",
+                    previous: undefined,
+                    generation: 0,
+                },
             ]);
 
             history = history.redo();
