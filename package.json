@@ -1,6 +1,6 @@
 {
     "name": "@monkin/history",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "An immutable library for document history management with first-class undo/redo support",
     "repository": {
         "type": "git",
