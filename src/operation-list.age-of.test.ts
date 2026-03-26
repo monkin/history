@@ -10,7 +10,7 @@ describe("OperationList.ageOf reproduction", () => {
         history = history.add("op1").add("op2").add("op3");
 
         // op3 is id 3, op2 is id 2, op1 is id 1
-        // current is 3
+        // pointer is 3
         // iteration: 3, 2, 1
         // ages: 3:0, 2:1, 1:2
 
@@ -28,7 +28,7 @@ describe("OperationList.ageOf reproduction", () => {
         history = history.add("op1").add("op2").add("op3");
 
         history = history.undo();
-        // current is 2. op3 is undone.
+        // pointer is 2. op3 is undone.
         // iteration: 2, 1
         // ages: 2:0, 1:1
 
@@ -37,7 +37,7 @@ describe("OperationList.ageOf reproduction", () => {
         expect(history.ageOf(1)).toBe(1);
 
         history = history.redo();
-        // current is 3 again.
+        // pointer is 3 again.
         expect(history.ageOf(3)).toBe(0);
         expect(history.ageOf(2)).toBe(1);
         expect(history.ageOf(1)).toBe(2);
@@ -59,23 +59,23 @@ describe("OperationList.ageOf reproduction", () => {
         let history = OperationList.empty<number, string>(generateId);
         history = history.add("op1").add("op2").add("op3");
 
-        history = history.undo().undo(); // current is 1
+        history = history.undo().undo(); // pointer is 1
         expect(history.ageOf(1)).toBe(0);
         expect(history.ageOf(2)).toBeUndefined();
         expect(history.ageOf(3)).toBeUndefined();
 
-        history = history.add("op4"); // current is 4, previous is 1
-        // Path: 4 -> 1. op2 and op3 are in history.entries() but not in current history branch.
+        history = history.add("op4"); // pointer is 4, previous is 1
+        // Path: 4 -> 1. op2 and op3 are in history.entries() but not in pointer history branch.
         expect(history.ageOf(4)).toBe(0);
         expect(history.ageOf(1)).toBe(1);
         expect(history.ageOf(2)).toBeUndefined();
         expect(history.ageOf(3)).toBeUndefined();
 
-        history = history.undo(); // current is 1 again
+        history = history.undo(); // pointer is 1 again
         expect(history.ageOf(1)).toBe(0);
         expect(history.ageOf(4)).toBeUndefined();
 
-        history = history.redo(); // current is 4 again (since it's on the path from maxId)
+        history = history.redo(); // pointer is 4 again (since it's on the path from maxId)
         expect(history.ageOf(4)).toBe(0);
         expect(history.ageOf(1)).toBe(1);
     });
@@ -84,21 +84,21 @@ describe("OperationList.ageOf reproduction", () => {
         let history = OperationList.empty<number, string>(generateId);
         history = history.add("1").add("2").add("3").add("4").add("5");
 
-        history = history.undo().undo(); // current is 3
+        history = history.undo().undo(); // pointer is 3
         expect(history.ageOf(3)).toBe(0);
         expect(history.ageOf(4)).toBeUndefined();
         expect(history.ageOf(5)).toBeUndefined();
 
-        history = history.redo(); // current is 4
+        history = history.redo(); // pointer is 4
         expect(history.ageOf(4)).toBe(0);
         expect(history.ageOf(3)).toBe(1);
         expect(history.ageOf(5)).toBeUndefined();
 
-        history = history.undo().undo().undo(); // current is 1
+        history = history.undo().undo().undo(); // pointer is 1
         expect(history.ageOf(1)).toBe(0);
         expect(history.ageOf(2)).toBeUndefined();
 
-        history = history.redo().redo(); // current is 3
+        history = history.redo().redo(); // pointer is 3
         expect(history.ageOf(3)).toBe(0);
         expect(history.ageOf(2)).toBe(1);
         expect(history.ageOf(1)).toBe(2);

@@ -10,7 +10,7 @@ describe("OperationList.get", () => {
         history = history.add("op1").add("op2").add("op3");
 
         // op3:id 3, op2:id 2, op1:id 1
-        // current is 3
+        // pointer is 3
         // iteration: 3, 2, 1
 
         expect(history.get(1)).toEqual({
@@ -46,7 +46,7 @@ describe("OperationList.get", () => {
         history = history.add("op1").add("op2").add("op3");
 
         history = history.undo();
-        // current is 2. op3 is undone.
+        // pointer is 2. op3 is undone.
         // iteration: 2, 1
 
         expect(history.get(3)).toBeUndefined();
@@ -64,7 +64,7 @@ describe("OperationList.get", () => {
         });
 
         history = history.redo();
-        // current is 3 again.
+        // pointer is 3 again.
         expect(history.get(3)).toEqual({
             id: 3,
             operation: "op3",

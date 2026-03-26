@@ -17,7 +17,7 @@ import {
  * It contains a linked list of operations with references to the previous one.
  * Operation can be added to the operation list but cannot be removed.
  *
- * Undo/redo are implemented by moving the `current` operation pointer.
+ * Undo/redo are implemented by moving the history pointer.
  *
  * For one-click actions everything is straight forward. Continuous actions
  * (resizing while mouse moving, for example) should be stored outside until the
@@ -34,7 +34,7 @@ export class OperationList<Id extends string | number | bigint, Operation> {
          *
          * @internal
          */
-        readonly current: Id | undefined,
+        readonly pointer: Id | undefined,
         /**
          * Function to generate a new unique id for an entry.
          * It receives the biggest Id in the operation list if any.
@@ -53,8 +53,8 @@ export class OperationList<Id extends string | number | bigint, Operation> {
     }
 
     /**
-     * Get the entry with the given id if it's reachable from the current state.
-     * If the item is undone and not present in the current branch returns undefined.
+     * Get the entry with the given id if it's reachable from the pointer state.
+     * If the item is undone and not present in the pointer branch returns undefined.
      */
     get(id: Id): OperationList.Entry<Id, Operation> | undefined {
         return lookup(this, id);
@@ -62,7 +62,7 @@ export class OperationList<Id extends string | number | bigint, Operation> {
 
     /**
      * Checks if an entry with the specified ID exists.
-     * If the item is undone and not present in the current branch returns false.
+     * If the item is undone and not present in the pointer branch returns false.
      */
     has(id: Id): boolean {
         return this.get(id) !== undefined;
@@ -85,40 +85,40 @@ export class OperationList<Id extends string | number | bigint, Operation> {
      * `undefined` means that the id is not present in the collection or was undone.
      */
     ageOf(id: Id): number | undefined {
-        const { current } = this;
-        if (current === undefined) return undefined;
-        if (id === current) return 0;
+        const { pointer } = this;
+        if (pointer === undefined) return undefined;
+        if (id === pointer) return 0;
 
-        const currentEntry = this.get(current);
+        const pointerEntry = this.get(pointer);
         const oldEntry = this.get(id);
 
-        return currentEntry && oldEntry
-            ? currentEntry.generation - oldEntry.generation
+        return pointerEntry && oldEntry
+            ? pointerEntry.generation - oldEntry.generation
             : undefined;
     }
 
     /**
      * Upload a list of items to the operation list.
      * This operation should be used for partial operation list loading or remote update.
-     * It won't change `current`, since it uploads older item.
+     * It won't change `pointer`, since it uploads older item.
      */
     upload(
         items: OperationList.Entry<Id, Operation>[],
     ): OperationList<Id, Operation> {
         return new OperationList(
             insertAll(this.items, items, compareEntries),
-            this.current,
+            this.pointer,
             this.generateId,
         );
     }
 
     get canUndo(): boolean {
-        return this.current !== undefined;
+        return this.pointer !== undefined;
     }
 
     get canRedo(): boolean {
-        const { current } = this;
-        if (current === undefined) {
+        const { pointer } = this;
+        if (pointer === undefined) {
             for (const item of this.entries()) {
                 if (item.previous === undefined) return true;
             }
@@ -126,7 +126,7 @@ export class OperationList<Id extends string | number | bigint, Operation> {
         }
 
         for (const item of this.entries()) {
-            if (item.previous === current) return true;
+            if (item.previous === pointer) return true;
         }
 
         return false;
@@ -136,17 +136,17 @@ export class OperationList<Id extends string | number | bigint, Operation> {
      * Add a new operation to the operation list.
      */
     add(operation: Operation): OperationList<Id, Operation> {
-        const { items, current, generateId, maxId } = this;
+        const { items, pointer, generateId, maxId } = this;
 
         const id = generateId(maxId);
         const generation =
-            current !== undefined
-                ? (this.get(current)?.generation ?? 0) + 1
+            pointer !== undefined
+                ? (this.get(pointer)?.generation ?? 0) + 1
                 : 0;
         return new OperationList(
             insert(
                 items,
-                { id, operation, previous: current, generation },
+                { id, operation, previous: pointer, generation },
                 compareEntries,
             ),
             id,
@@ -155,29 +155,37 @@ export class OperationList<Id extends string | number | bigint, Operation> {
     }
 
     undo(): OperationList<Id, Operation> {
-        const { items, current, generateId } = this;
+        const { items, pointer, generateId } = this;
 
-        if (current === undefined) return this;
+        if (pointer === undefined) return this;
 
         return new OperationList(
             items,
-            current && getItem(items, lookupById(current))?.previous,
+            pointer && getItem(items, lookupById(pointer))?.previous,
             generateId,
         );
     }
 
     redo(): OperationList<Id, Operation> {
-        const { items, current, generateId, maxId } = this;
+        const { items, pointer, generateId, maxId } = this;
 
-        if (current === maxId || maxId === undefined) return this;
+        if (pointer === maxId || maxId === undefined) return this;
 
         for (const item of this.entries()) {
-            if (item.previous === current) {
+            if (item.previous === pointer) {
                 return new OperationList(items, item.id, generateId);
             }
         }
 
         return this;
+    }
+
+    /**
+     * Set the history pointer to a specific operation id.
+     */
+    setPointer(id: Id | undefined): OperationList<Id, Operation> {
+        if (this.pointer === id) return this;
+        return new OperationList(this.items, id, this.generateId);
     }
 
     /**
@@ -193,7 +201,7 @@ export class OperationList<Id extends string | number | bigint, Operation> {
      * To iterate over all operations, use `for (const item of operationList.entries()) { ... }` instead.
      */
     [Symbol.iterator](): Generator<OperationList.Entry<Id, Operation>> {
-        return this.iterate(this.current);
+        return this.iterate(this.pointer);
     }
 
     private *iterate(
@@ -224,13 +232,13 @@ export class OperationList<Id extends string | number | bigint, Operation> {
     }
 
     static fromItems<Id extends string | number | bigint, Operation>(
-        current: Id | undefined,
+        pointer: Id | undefined,
         items: OperationList.Entry<Id, Operation>[],
         generateId: OperationList.IdGenerator<Id>,
     ): OperationList<Id, Operation> {
         return new OperationList(
             insertAll(emptyList, items, compareEntries),
-            current,
+            pointer,
             generateId,
         );
     }

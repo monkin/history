@@ -60,7 +60,7 @@ history = history.add("Change Background");
 if (history.canUndo) history = history.undo(); // Moves pointer back
 if (history.canRedo) history = history.redo(); // Moves pointer forward
 
-// Reconstruct state from the current branch
+// Reconstruct state from the pointer branch
 for (const entry of history) {
     console.log(entry.operation);
 }
@@ -68,13 +68,14 @@ for (const entry of history) {
 
 #### API Highlights
 
-- `history.current`: The ID of the current operation.
+- `history.pointer`: The ID of the current operation.
+- `history.setPointer(id)`: Moves the history pointer to a specific operation id.
 - `history.isUndone(id)`: Checks if an operation exists but is currently undone.
 - `history.ageOf(id)`: Distance between current state and a given entry.
 - `history.get(id)`: Retrieves an entry reachable from the current state.
 - `history.entry(id)`: Retrieves an entry by ID, including undone ones.
 - `history.entries()`: Generator yielding all recorded entries.
-- `[Symbol.iterator]`: Iterates over the current branch (skipping undone operations).
+- `[Symbol.iterator]`: Iterates over the pointer branch (skipping undone operations).
 - `history.upload(items)`: Bulk-upload entries, useful for partial history loading.
 - `OperationList.diff(before, after)`: Static method comparing two history lists to find added, removed, or changed operations.
 

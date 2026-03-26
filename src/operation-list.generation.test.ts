@@ -26,7 +26,7 @@ describe("OperationList generation", () => {
         let history = OperationList.empty<number, string>(generateId);
         history = history.add("op1").add("op2"); // 1(gen 0), 2(gen 1)
 
-        history = history.undo(); // current is 1
+        history = history.undo(); // pointer is 1
         history = history.add("op3"); // 1(gen 0), 3(gen 1)
 
         const all = Array.from(history.entries());

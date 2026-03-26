@@ -10,7 +10,7 @@ describe("OperationList.entry", () => {
         history = history.add("op1").add("op2").add("op3");
 
         history = history.undo();
-        // current is 2. op3 is undone.
+        // pointer is 2. op3 is undone.
 
         expect(history.get(3)).toBeUndefined();
         expect(history.entry(3)).toEqual({

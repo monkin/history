@@ -19,7 +19,7 @@ function createItem(
 }
 
 describe("OperationList", () => {
-    it("should iterate through history starting from current", () => {
+    it("should iterate through history starting from pointer", () => {
         const item1 = createItem(1);
         const item2 = createItem(2, 1);
         const item3 = createItem(3, 2);
@@ -40,12 +40,12 @@ describe("OperationList", () => {
 
         const history = new OperationList<number, string>(list, 2, generateId);
 
-        // Current is 2, so it should iterate 2 -> 1
+        // Pointer is 2, so it should iterate 2 -> 1
         const iterated = Array.from(history);
         expect(iterated).toEqual([item2, item1]);
     });
 
-    it("should iterate through everything if current is maxId", () => {
+    it("should iterate through everything if pointer is maxId", () => {
         const item1 = createItem(1);
         const item2 = createItem(2, 1);
         const item3 = createItem(3, 2);
@@ -70,7 +70,7 @@ describe("OperationList", () => {
         expect(iterated).toEqual([item3, item2, item1]);
     });
 
-    it("should return empty if current is undefined", () => {
+    it("should return empty if pointer is undefined", () => {
         const item1 = createItem(1);
         const compare = (a: MyEntry, b: MyEntry) => {
             if (a.id < b.id) return Comparison.Greater;
@@ -96,7 +96,7 @@ describe("OperationList", () => {
         ((maxId as number) ?? 0) + 1;
 
     describe("add", () => {
-        it("should add a new operation and update current", () => {
+        it("should add a new operation and update pointer", () => {
             let history = new OperationList<number, string>(
                 emptyList as any,
                 undefined,
@@ -104,13 +104,13 @@ describe("OperationList", () => {
             );
 
             history = history.add("op1");
-            expect(history.current).toBe(1);
+            expect(history.pointer).toBe(1);
             expect(Array.from(history)).toEqual([
                 { id: 1, operation: "op1", previous: undefined, generation: 0 },
             ]);
 
             history = history.add("op2");
-            expect(history.current).toBe(2);
+            expect(history.pointer).toBe(2);
             expect(Array.from(history)).toEqual([
                 { id: 2, operation: "op2", previous: 1, generation: 1 },
                 { id: 1, operation: "op1", previous: undefined, generation: 0 },
@@ -127,7 +127,7 @@ describe("OperationList", () => {
             );
 
             history = history.add("op1").add("op2").add("op3");
-            expect(history.current).toBe(3);
+            expect(history.pointer).toBe(3);
 
             const all = Array.from(history.entries());
             expect(all).toEqual([
@@ -146,7 +146,7 @@ describe("OperationList", () => {
 
             history = history.add("op1").add("op2").add("op3");
             history = history.undo();
-            expect(history.current).toBe(2);
+            expect(history.pointer).toBe(2);
 
             const all = Array.from(history.entries());
             expect(all).toEqual([
@@ -177,26 +177,26 @@ describe("OperationList", () => {
             );
 
             history = history.add("op1").add("op2");
-            expect(history.current).toBe(2);
+            expect(history.pointer).toBe(2);
 
             history = history.undo();
-            expect(history.current).toBe(1);
+            expect(history.pointer).toBe(1);
             expect(Array.from(history)).toEqual([
                 { id: 1, operation: "op1", previous: undefined, generation: 0 },
             ]);
 
             history = history.undo();
-            expect(history.current).toBeUndefined();
+            expect(history.pointer).toBeUndefined();
             expect(Array.from(history)).toEqual([]);
 
             history = history.redo();
-            expect(history.current).toBe(1);
+            expect(history.pointer).toBe(1);
             expect(Array.from(history)).toEqual([
                 { id: 1, operation: "op1", previous: undefined, generation: 0 },
             ]);
 
             history = history.redo();
-            expect(history.current).toBe(2);
+            expect(history.pointer).toBe(2);
             expect(Array.from(history)).toEqual([
                 { id: 2, operation: "op2", previous: 1, generation: 1 },
                 { id: 1, operation: "op1", previous: undefined, generation: 0 },
@@ -208,7 +208,7 @@ describe("OperationList", () => {
         it("should create an empty history", () => {
             const history = OperationList.empty<number, string>(generateId);
 
-            expect(history.current).toBeUndefined();
+            expect(history.pointer).toBeUndefined();
             expect(history.canUndo).toBe(false);
             expect(history.canRedo).toBe(false);
             expect(Array.from(history)).toEqual([]);
@@ -222,7 +222,7 @@ describe("OperationList", () => {
             expect(history.canRedo).toBe(false);
         });
 
-        it("should be true if current is undefined and history has items with no previous", () => {
+        it("should be true if pointer is undefined and history has items with no previous", () => {
             const item1 = {
                 id: 1,
                 operation: "op1",
@@ -237,7 +237,7 @@ describe("OperationList", () => {
             expect(history.canRedo).toBe(true);
         });
 
-        it("should be false if current is undefined and history only has items with previous", () => {
+        it("should be false if pointer is undefined and history only has items with previous", () => {
             // This is an inconsistent state, but canRedo should handle it
             const item1 = {
                 id: 2,
@@ -253,7 +253,7 @@ describe("OperationList", () => {
             expect(history.canRedo).toBe(false);
         });
 
-        it("should be false if current is the latest item", () => {
+        it("should be false if pointer is the latest item", () => {
             const item1 = {
                 id: 1,
                 operation: "op1",
@@ -268,7 +268,7 @@ describe("OperationList", () => {
             expect(history.canRedo).toBe(false);
         });
 
-        it("should be true if there is an item with previous === current", () => {
+        it("should be true if there is an item with previous === pointer", () => {
             const item1 = {
                 id: 1,
                 operation: "op1",
@@ -316,7 +316,7 @@ describe("OperationList", () => {
             expect(history.canRedo).toBe(true);
         });
 
-        it("should be true if current is not in items but an item has previous === current", () => {
+        it("should be true if pointer is not in items but an item has previous === pointer", () => {
             const item1 = {
                 id: 1,
                 operation: "op2",
@@ -355,7 +355,7 @@ describe("OperationList", () => {
             };
 
             history = history.upload([item3]);
-            expect(history.current).toBeUndefined();
+            expect(history.pointer).toBeUndefined();
 
             history = history.upload([item1, item2]);
             expect(Array.from(history.entries())).toEqual([
@@ -365,9 +365,9 @@ describe("OperationList", () => {
             ]);
         });
 
-        it("should allow replacing existing items including current", () => {
+        it("should allow replacing existing items including pointer", () => {
             let history = OperationList.empty<number, string>(generateId);
-            history = history.add("op1"); // ID 1, current 1
+            history = history.add("op1"); // ID 1, pointer 1
 
             const updatedItem = {
                 id: 1,
@@ -377,13 +377,13 @@ describe("OperationList", () => {
             };
             history = history.upload([updatedItem]);
 
-            expect(history.current).toBe(1);
+            expect(history.pointer).toBe(1);
             expect(Array.from(history)).toEqual([updatedItem]);
         });
     });
 
     describe("fromItems", () => {
-        it("should create history from items and current pointer", () => {
+        it("should create history from items and pointer pointer", () => {
             const item1 = {
                 id: 1,
                 operation: "op1",
@@ -410,7 +410,7 @@ describe("OperationList", () => {
                 generateId,
             );
 
-            expect(history.current).toBe(2);
+            expect(history.pointer).toBe(2);
             expect(Array.from(history)).toEqual([item2, item1]);
             expect(Array.from(history.entries())).toEqual([
                 item3,
@@ -426,7 +426,7 @@ describe("OperationList", () => {
             let history = OperationList.empty<bigint, string>(generateBigIntId);
 
             history = history.add("op1").add("op2");
-            expect(history.current).toBe(2n);
+            expect(history.pointer).toBe(2n);
             expect(Array.from(history)).toEqual([
                 { id: 2n, operation: "op2", previous: 1n, generation: 1 },
                 {
@@ -438,7 +438,7 @@ describe("OperationList", () => {
             ]);
 
             history = history.undo();
-            expect(history.current).toBe(1n);
+            expect(history.pointer).toBe(1n);
             expect(Array.from(history)).toEqual([
                 {
                     id: 1n,
@@ -449,7 +449,7 @@ describe("OperationList", () => {
             ]);
 
             history = history.redo();
-            expect(history.current).toBe(2n);
+            expect(history.pointer).toBe(2n);
         });
 
         it("should handle empty items", () => {
@@ -459,7 +459,7 @@ describe("OperationList", () => {
                 generateId,
             );
 
-            expect(history.current).toBeUndefined();
+            expect(history.pointer).toBeUndefined();
             expect(Array.from(history)).toEqual([]);
             expect(Array.from(history.entries())).toEqual([]);
         });
@@ -491,7 +491,7 @@ describe("OperationList", () => {
                 generateId,
             );
 
-            expect(history.current).toBe(3);
+            expect(history.pointer).toBe(3);
             expect(Array.from(history.entries())).toEqual([
                 item3,
                 item2,
