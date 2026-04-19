@@ -33,8 +33,6 @@ export class OperationList<Id extends string | number | bigint, Operation> {
         /**
          * Pointer to the current entry in the operation list.
          * It can be moved by undo/redo.
-         *
-         * @internal
          */
         readonly pointer: Id | undefined,
         /**
