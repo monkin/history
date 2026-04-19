@@ -5,9 +5,8 @@
         "lib": ["ESNext", "DOM", "DOM.Iterable"],
         "moduleResolution": "bundler",
         "declaration": true,
+        "rootDir": "src",
         "sourceMap": true,
-        "emitDeclarationOnly": true,
-        "allowImportingTsExtensions": true,
         "outDir": "dist",
         "strict": true,
         "noUnusedLocals": true,
@@ -15,5 +14,6 @@
         "noFallthroughCasesInSwitch": true,
         "noUncheckedSideEffectImports": true
     },
-    "include": ["src"]
+    "include": ["src"],
+    "exclude": ["src/**/*.test.ts"]
 }

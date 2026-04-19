@@ -1,4 +1,4 @@
-import { lookup } from "./lookup.ts";
+import { lookup } from "./lookup";
 import {
     Comparison,
     diff,
@@ -9,10 +9,11 @@ import {
     iterate,
     remove,
     type SortedList,
-} from "./sorted-list.ts";
+} from "./sorted-list";
 
 /**
  * Immutable list of snapshots
+ * @public
  */
 export class SnapshotList<Id extends string | number | bigint, Snapshot> {
     /** @internal */
@@ -94,6 +95,9 @@ const lookupById =
         return Comparison.Equal;
     };
 
+/**
+ * @public
+ */
 export namespace SnapshotList {
     export type Item<Id extends string | number | bigint, Snapshot> = {
         id: Id;

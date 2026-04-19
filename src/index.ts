@@ -1,2 +1,2 @@
-export { OperationList } from "./operation-list.ts";
+export { OperationList } from "./operation-list";
 export { SnapshotList } from "./snapshot-list";

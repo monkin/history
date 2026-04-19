@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { OperationList } from "./operation-list.ts";
+import { OperationList } from "./operation-list";
 
 describe("OperationList.setPointer", () => {
     const generateId: OperationList.IdGenerator<number> = (maxId) =>

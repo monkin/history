@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SnapshotList } from "./snapshot-list.ts";
+import { SnapshotList } from "./snapshot-list";
 
 describe("SnapshotList", () => {
     it("should be empty initially", () => {

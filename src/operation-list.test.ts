@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { OperationList } from "./operation-list.ts";
-import { Comparison, emptyList, insert } from "./sorted-list.ts";
+import { OperationList } from "./operation-list";
+import { Comparison, emptyList, insert } from "./sorted-list";
 
 interface MyEntry extends OperationList.Entry<number, string> {
     id: number;

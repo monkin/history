@@ -1,4 +1,4 @@
-import { lookup } from "./lookup.ts";
+import { lookup } from "./lookup";
 import {
     Comparison,
     diff,
@@ -22,6 +22,8 @@ import {
  * For one-click actions everything is straight forward. Continuous actions
  * (resizing while mouse moving, for example) should be stored outside until the
  * operation is finished ('mouseup' in case of resizing).
+ *
+ * @public
  */
 export class OperationList<Id extends string | number | bigint, Operation> {
     /** @internal */
@@ -271,6 +273,9 @@ const lookupById =
         return Comparison.Equal;
     };
 
+/**
+ * @public
+ */
 export namespace OperationList {
     /**
      * Entry of the operation list.

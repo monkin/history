@@ -11,7 +11,8 @@ export default defineConfig({
         lib: {
             entry: "./src/index.ts",
             name: "history",
-            fileName: (format) => `history.${format === "es" ? "js" : "cjs"}`,
+            formats: ["es", "cjs"],
+            fileName: (format) => `index.${format === "es" ? "js" : "cjs"}`,
         },
         minify: "terser",
         sourcemap: true,
