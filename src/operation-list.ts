@@ -45,10 +45,7 @@ export class OperationList<Id extends string | number | bigint, Operation> {
         readonly generateId: OperationList.IdGenerator<Id>,
     ) {}
 
-    /**
-     * @internal
-     */
-    private get maxId(): Id | undefined {
+    get maxId(): Id | undefined {
         return first(this.items)?.id;
     }
 
